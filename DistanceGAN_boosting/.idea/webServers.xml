@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="c7c2c17e-b957-4adc-9e59-7cd1cadf2db6" name="pc-wolf-g06.tau.ac.il" url="http://pc-wolf-g06.tau.ac.il">
+        <fileTransfer host="pc-wolf-g06.tau.ac.il" port="22" rootFolder="/media/data2/sagieb" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+      <webServer id="a807eaf7-024c-4a42-977b-815aa4760cf4" name="pc-wolf-g04.cs.tau.ac.il" url="http://pc-wolf-g04.cs.tau.ac.il">
+        <fileTransfer host="pc-wolf-g04.cs.tau.ac.il" port="22" rootFolder="/media/data1/sagieb" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+      <webServer id="5cf4c81d-b94d-4e35-be13-bd2f9b10df6e" name="pc-wolf-g03.cs.tau.ac.il" url="http://pc-wolf-g03.cs.tau.ac.il">
+        <fileTransfer host="pc-wolf-g03.cs.tau.ac.il" port="22" rootFolder="/media/data2/sagieb" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+      <webServer id="29f219ce-621c-48e9-b3a4-3fe070cea034" name="pc-wolf-g05.cs.tau.ac.il" url="http://pc-wolf-g05.cs.tau.ac.il">
+        <fileTransfer host="pc-wolf-g05.cs.tau.ac.il" port="22" rootFolder="/media/data2/sagieb" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+      <webServer id="4964ef7c-b3c7-4eda-9f93-a0321938f30d" name="beast10.tau.ac.il" url="http://beast10.tau.ac.il">
+        <fileTransfer host="beast10.tau.ac.il" port="22" rootFolder="/media/data3/sagieb" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+      <webServer id="27e936ca-a37f-417e-8b28-20c014514cec" name="pc-wolf-g07.cs.tau.ac.il" url="http://pc-wolf-g07.cs.tau.ac.il">
+        <fileTransfer host="pc-wolf-g07.cs.tau.ac.il" port="22" rootFolder="/media/data2/sagieb" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+      <webServer id="d8f14eb7-6467-4560-b386-3afa43abce40" name="pc-wolf-g08.tau.ac.il" url="http://pc-wolf-g08.tau.ac.il">
+        <fileTransfer host="pc-wolf-g08.tau.ac.il" port="22" rootFolder="/media/data2/sagieb" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
