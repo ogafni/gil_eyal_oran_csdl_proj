@@ -58,8 +58,8 @@ class Distance_with_riskGAN(Disco_with_riskGAN):
         num_pairs = 0
         min_length = min(len(As), len(Bs))
 
-        for i in xrange(min_length - 1):
-            for j in xrange(i + 1, min_length):
+        for i in range(min_length - 1):
+            for j in range(i + 1, min_length):
                 num_pairs += 1
                 loss_distance_A_ij, loss_distance_B_ij = \
                     self.get_individual_distance_loss(As[i], As[j],
@@ -82,14 +82,14 @@ class Distance_with_riskGAN(Disco_with_riskGAN):
 
         # If self distance computed std for top and bottom half
         if self.args.use_self_distance:
-            for i in xrange(num_items):
+            for i in range(num_items):
                 var_half_1, var_half_2 = torch.chunk(vars[i], 2, dim=2)
                 std_sum += np.square(self.as_np(self.distance(var_half_1, var_half_2)) - expectation)
             return np.sqrt(std_sum / num_items)
 
         # Otherwise compute std for all pairs of images
-        for i in xrange(num_items - 1):
-            for j in xrange(i + 1, num_items):
+        for i in range(num_items - 1):
+            for j in range(i + 1, num_items):
                 num_pairs += 1
                 std_sum += np.square(self.as_np(self.distance(vars[i], vars[j])) - expectation)
 
@@ -102,15 +102,15 @@ class Distance_with_riskGAN(Disco_with_riskGAN):
 
         # If self distance computed expectation for top and bottom half
         if self.args.use_self_distance:
-            for i in xrange(num_items):
+            for i in range(num_items):
                 # Split image to top and bottom half
                 var_half_1, var_half_2 = torch.chunk(vars[i], 2, dim=2)
                 distance_sum += self.as_np(self.distance(var_half_1, var_half_2))
             return distance_sum / num_items
 
         # Otherwise compute expectation for all pairs of images
-        for i in xrange(num_items - 1):
-            for j in xrange(i + 1, num_items):
+        for i in range(num_items - 1):
+            for j in range(i + 1, num_items):
                 num_pairs += 1
                 distance_sum += self.as_np(self.distance(vars[i], vars[j]))
 
@@ -169,10 +169,10 @@ class Distance_with_riskGAN(Disco_with_riskGAN):
         self.std_A = self.get_std(num_vars_A, A_vars, self.expectation_A)[0].astype(float)
         self.std_B = self.get_std(num_vars_B, B_vars, self.expectation_B)[0].astype(float)
 
-        print('Expectation for dataset A: %f' % self.expectation_A)
-        print('Expectation for dataset B: %f' % self.expectation_B)
-        print('Std for dataset A: %f' % self.std_A)
-        print('Std for dataset B: %f' % self.std_B)
+        print(('Expectation for dataset A: %f' % self.expectation_A))
+        print(('Expectation for dataset B: %f' % self.expectation_B))
+        print(('Std for dataset A: %f' % self.std_A))
+        print(('Std for dataset B: %f' % self.std_B))
 
 
 
@@ -353,19 +353,19 @@ class Distance_with_riskGAN(Disco_with_riskGAN):
             alligned_correlation_loss_AB_2, alligned_correlation_loss_BA_2,
             alligned_dis_loss_A_1, alligned_dis_loss_B_1, alligned_dis_loss_A_2, alligned_dis_loss_B_2) = self.alligned_losses
 
-            print "---------------------"
-            print "GAN Loss 1:", self.as_np(alligned_gan_loss_A_1.mean()), self.as_np(alligned_gan_loss_B_1.mean())
-            print "DIS Loss 1:", self.as_np(alligned_dis_loss_A_1.mean()), self.as_np(alligned_dis_loss_B_1.mean())
-            print "RECON Loss 1:", self.as_np(alligned_distance_loss_A_1.mean()), self.as_np(alligned_distance_loss_B_1.mean())
-            print "Correlation Loss 1:", self.as_np(alligned_correlation_loss_AB_2.mean()), self.as_np(alligned_correlation_loss_BA_2.mean())
-            print "Ground truth Loss 1:", self.as_np(self.ground_truth_loss_AB_1.mean()), self.as_np(self.ground_truth_loss_BA_1.mean())
+            print("---------------------")
+            print("GAN Loss 1:", self.as_np(alligned_gan_loss_A_1.mean()), self.as_np(alligned_gan_loss_B_1.mean()))
+            print("DIS Loss 1:", self.as_np(alligned_dis_loss_A_1.mean()), self.as_np(alligned_dis_loss_B_1.mean()))
+            print("RECON Loss 1:", self.as_np(alligned_distance_loss_A_1.mean()), self.as_np(alligned_distance_loss_B_1.mean()))
+            print("Correlation Loss 1:", self.as_np(alligned_correlation_loss_AB_2.mean()), self.as_np(alligned_correlation_loss_BA_2.mean()))
+            print("Ground truth Loss 1:", self.as_np(self.ground_truth_loss_AB_1.mean()), self.as_np(self.ground_truth_loss_BA_1.mean()))
 
-            print "---------------------"
-            print "GAN Loss 1:", self.as_np(alligned_gan_loss_A_2.mean()), self.as_np(alligned_gan_loss_B_2.mean())
-            print "DIS Loss 1:", self.as_np(alligned_dis_loss_A_2.mean()), self.as_np(alligned_dis_loss_B_2.mean())
-            print "RECON Loss 1:", self.as_np(alligned_distance_loss_A_1.mean()), self.as_np(alligned_distance_loss_B_2.mean())
-            print "Correlation Loss 1:", self.as_np(alligned_correlation_loss_AB_2.mean()), self.as_np(alligned_correlation_loss_BA_2.mean())
-            print "Ground truth Loss 1:", self.as_np(self.ground_truth_loss_AB_2.mean()), self.as_np(self.ground_truth_loss_BA_2.mean())
+            print("---------------------")
+            print("GAN Loss 1:", self.as_np(alligned_gan_loss_A_2.mean()), self.as_np(alligned_gan_loss_B_2.mean()))
+            print("DIS Loss 1:", self.as_np(alligned_dis_loss_A_2.mean()), self.as_np(alligned_dis_loss_B_2.mean()))
+            print("RECON Loss 1:", self.as_np(alligned_distance_loss_A_1.mean()), self.as_np(alligned_distance_loss_B_2.mean()))
+            print("Correlation Loss 1:", self.as_np(alligned_correlation_loss_AB_2.mean()), self.as_np(alligned_correlation_loss_BA_2.mean()))
+            print("Ground truth Loss 1:", self.as_np(self.ground_truth_loss_AB_2.mean()), self.as_np(self.ground_truth_loss_BA_2.mean()))
 
         if self.iters % self.args.image_save_interval == 0:
             AB_1 = self.generator_B_1(self.test_A)

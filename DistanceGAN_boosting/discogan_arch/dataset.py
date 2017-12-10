@@ -19,20 +19,21 @@ face_3d_path = os.path.join(dataset_path, 'PublicMM1', '05_renderings')
 face_real_path = os.path.join(dataset_path, 'real_face')
 car_path = os.path.join(dataset_path, 'data', 'cars')
 
-def shuffle_data(da, db):
-    a_idx = range(len(da))
-    np.random.shuffle( a_idx )
 
-    b_idx = range(len(db))
+def shuffle_data(da, db):
+    a_idx = list(range(len(da)))
+    np.random.shuffle(a_idx)
+
+    b_idx = list(range(len(db)))
     np.random.shuffle(b_idx)
 
-    shuffled_da = np.array(da)[ np.array(a_idx) ]
-    shuffled_db = np.array(db)[ np.array(b_idx) ]
+    shuffled_da = np.array(da)[np.array(a_idx)]
+    shuffled_db = np.array(db)[np.array(b_idx)]
 
     return shuffled_da, shuffled_db
 
-def read_images( filenames, domain=None, image_size=64, split=256):
 
+def read_images(filenames, domain=None, image_size=64, split=256):
     images = []
 
     for fn in filenames:
@@ -41,69 +42,73 @@ def read_images( filenames, domain=None, image_size=64, split=256):
             continue
 
         if domain == 'A':
-            kernel = np.ones((3,3), np.uint8)
+            kernel = np.ones((3, 3), np.uint8)
             image = image[:, :split, :]
             image = 255. - image
-            image = cv2.dilate( image, kernel, iterations=1 )
+            image = cv2.dilate(image, kernel, iterations=1)
             image = 255. - image
         elif domain == 'B':
             image = image[:, split:, :]
 
-        image = cv2.resize(image, (image_size,image_size))
+        image = cv2.resize(image, (image_size, image_size))
         image = image.astype(np.float32) / 255.
-        image = image.transpose(2,0,1)
-        images.append( image )
+        image = image.transpose(2, 0, 1)
+        images.append(image)
 
-    images = np.stack( images )
+    images = np.stack(images)
     return images
 
-def read_attr_file( attr_path, image_dir ):
-    f = open( attr_path )
+
+def read_attr_file(attr_path, image_dir):
+    f = open(attr_path)
     lines = f.readlines()
-    lines = map(lambda line: line.strip(), lines)
+    lines = [line.strip() for line in lines]
     columns = ['image_path'] + lines[1].split()
     lines = lines[2:]
 
-    items = map(lambda line: line.split(), lines)
-    df = pd.DataFrame( items, columns=columns )
-    df['image_path'] = df['image_path'].map( lambda x: os.path.join( image_dir, x ) )
+    items = [line.split() for line in lines]
+    df = pd.DataFrame(items, columns=columns)
+    df['image_path'] = df['image_path'].map(lambda x: os.path.join(image_dir, x))
 
     return df
 
+
 def get_celebA_files(style_A, style_B, constraint, constraint_type, test=False, n_test=200):
-    attr_file = os.path.join( celebA_path, 'list_attr_celeba.txt' )
-    image_dir = os.path.join( celebA_path, 'img_align_celeba' )
-    image_data = read_attr_file( attr_file, image_dir )
+    attr_file = os.path.join(celebA_path, 'list_attr_celeba.txt')
+    image_dir = os.path.join(celebA_path, 'img_align_celeba')
+    image_data = read_attr_file(attr_file, image_dir)
 
     if constraint:
-        image_data = image_data[ image_data[constraint] == constraint_type]
+        image_data = image_data[image_data[constraint] == constraint_type]
 
-    style_A_data = image_data[ image_data[style_A] == '1']['image_path'].values
+    style_A_data = image_data[image_data[style_A] == '1']['image_path'].values
     if style_B:
-        style_B_data = image_data[ image_data[style_B] == '1']['image_path'].values
+        style_B_data = image_data[image_data[style_B] == '1']['image_path'].values
     else:
-        style_B_data = image_data[ image_data[style_A] == '-1']['image_path'].values
+        style_B_data = image_data[image_data[style_A] == '-1']['image_path'].values
 
     if test == False:
         return style_A_data[:-n_test], style_B_data[:-n_test]
     if test == True:
         return style_A_data[-n_test:], style_B_data[-n_test:]
+
 
 def get_celebA_files_females(style_A, style_B, constraint, constraint_type, test=False, n_test=200):
-    attr_file = os.path.join( celebA_path, 'list_attr_celeba.txt' )
-    image_dir = os.path.join( celebA_path, 'img_align_celeba' )
-    image_data = read_attr_file( attr_file, image_dir )
+    attr_file = os.path.join(celebA_path, 'list_attr_celeba.txt')
+    image_dir = os.path.join(celebA_path, 'img_align_celeba')
+    image_data = read_attr_file(attr_file, image_dir)
 
     if constraint:
-        image_data = image_data[ image_data[constraint] == constraint_type]
+        image_data = image_data[image_data[constraint] == constraint_type]
 
-    style_A_data = image_data[ image_data[style_A] == '-1']['image_path'].values
-    style_B_data = image_data[ image_data[style_A] == '-1']['image_path'].values
+    style_A_data = image_data[image_data[style_A] == '-1']['image_path'].values
+    style_B_data = image_data[image_data[style_A] == '-1']['image_path'].values
 
     if test == False:
         return style_A_data[:-n_test], style_B_data[:-n_test]
     if test == True:
         return style_A_data[-n_test:], style_B_data[-n_test:]
+
 
 def get_cycle_files(item='maps', test=False, number_of_samples=None):
     if item == 'maps':
@@ -117,11 +122,11 @@ def get_cycle_files(item='maps', test=False, number_of_samples=None):
         if item == 'cityscapes':
             item_path = os.path.join(item_path, 'test')
         else:
-            item_path = os.path.join( item_path, 'val' )
+            item_path = os.path.join(item_path, 'val')
     else:
-        item_path = os.path.join( item_path, 'train' )
+        item_path = os.path.join(item_path, 'train')
 
-    image_paths = map(lambda x: os.path.join(item_path, x), os.listdir(item_path))
+    image_paths = [os.path.join(item_path, x) for x in os.listdir(item_path)]
     image_paths = sorted(image_paths)
 
     if number_of_samples is not None:
@@ -130,9 +135,8 @@ def get_cycle_files(item='maps', test=False, number_of_samples=None):
     if test == True:
         return [image_paths, image_paths]
     else:
-        n_images = len( image_paths )
-        return [image_paths[:n_images/2], image_paths[n_images/2:]]
-
+        n_images = len(image_paths)
+        return [image_paths[:n_images / 2], image_paths[n_images / 2:]]
 
 
 def get_edge2photo_files(item='edges2handbags', test=False, number_of_samples=None):
@@ -142,11 +146,11 @@ def get_edge2photo_files(item='edges2handbags', test=False, number_of_samples=No
         item_path = shoe_path
 
     if test == True:
-        item_path = os.path.join( item_path, 'val' )
+        item_path = os.path.join(item_path, 'val')
     else:
-        item_path = os.path.join( item_path, 'train' )
+        item_path = os.path.join(item_path, 'train')
 
-    image_paths = map(lambda x: os.path.join( item_path, x ), os.listdir( item_path ))
+    image_paths = [os.path.join(item_path, x) for x in os.listdir(item_path)]
 
     if number_of_samples is not None:
         image_paths = image_paths[:number_of_samples]
@@ -154,16 +158,17 @@ def get_edge2photo_files(item='edges2handbags', test=False, number_of_samples=No
     if test == True:
         return [image_paths, image_paths]
     else:
-        n_images = len( image_paths )
-        return [image_paths[:n_images/2], image_paths[n_images/2:]]
+        n_images = len(image_paths)
+        mid = round(n_images/2)
+        return [image_paths[:mid], image_paths[mid:]]
 
 
 def get_facescrub_files(test=False, n_test=200):
-    actor_path = os.path.join(facescrub_path, 'actors', 'face' )
-    actress_path = os.path.join( facescrub_path, 'actresses', 'face' )
+    actor_path = os.path.join(facescrub_path, 'actors', 'face')
+    actress_path = os.path.join(facescrub_path, 'actresses', 'face')
 
-    actor_files = map(lambda x: os.path.join( actor_path, x ), os.listdir( actor_path ) )
-    actress_files = map(lambda x: os.path.join( actress_path, x ), os.listdir( actress_path ) )
+    actor_files = [os.path.join(actor_path, x) for x in os.listdir(actor_path)]
+    actress_files = [os.path.join(actress_path, x) for x in os.listdir(actress_path)]
 
     if test == False:
         return actor_files[:-n_test], actress_files[:-n_test]
@@ -172,20 +177,23 @@ def get_facescrub_files(test=False, n_test=200):
 
 
 def get_chairs(test=False, half=None, ver=360, angle_info=False):
-    chair_ids = os.listdir( chair_path )
+    chair_ids = os.listdir(chair_path)
     if test:
         current_ids = chair_ids[-10:]
     else:
-        if half is None: current_ids = chair_ids[:-10]
-        elif half == 'first': current_ids = chair_ids[:-10][:len(chair_ids)/2]
-        elif half == 'last': current_ids = chair_ids[:-10][len(chair_ids)/2:]
+        if half is None:
+            current_ids = chair_ids[:-10]
+        elif half == 'first':
+            current_ids = chair_ids[:-10][:len(chair_ids) / 2]
+        elif half == 'last':
+            current_ids = chair_ids[:-10][len(chair_ids) / 2:]
 
     chair_paths = []
 
     for chair in current_ids:
-        current_path = os.path.join( chair_path, chair, 'renders' )
-        if not os.path.exists( current_path ): continue
-        filenames = filter(lambda x: x.endswith('.png'), os.listdir( current_path ))
+        current_path = os.path.join(chair_path, chair, 'renders')
+        if not os.path.exists(current_path): continue
+        filenames = [x for x in os.listdir(current_path) if x.endswith('.png')]
 
         for filename in filenames:
             angle = int(filename.split('_')[3][1:])
@@ -198,12 +206,13 @@ def get_chairs(test=False, half=None, ver=360, angle_info=False):
 
     return chair_paths
 
-def get_cars(test=False, ver=360, interval=1, half=None, angle_info=False, image_size=64, gray=True):
-    car_files = map(lambda x: os.path.join(car_path, x), os.listdir( car_path ))
-    car_files = filter(lambda x: x.endswith('.mat'), car_files)
 
-    car_idx = map(lambda x: int(x.split('car_')[1].split('_mesh')[0]), car_files )
-    car_df = pd.DataFrame( {'idx': car_idx, 'path': car_files}).sort_values(by='idx')
+def get_cars(test=False, ver=360, interval=1, half=None, angle_info=False, image_size=64, gray=True):
+    car_files = [os.path.join(car_path, x) for x in os.listdir(car_path)]
+    car_files = [x for x in car_files if x.endswith('.mat')]
+
+    car_idx = [int(x.split('car_')[1].split('_mesh')[0]) for x in car_files]
+    car_df = pd.DataFrame({'idx': car_idx, 'path': car_files}).sort_values(by='idx')
 
     car_files = car_df['path'].values
 
@@ -231,51 +240,52 @@ def get_cars(test=False, ver=360, interval=1, half=None, angle_info=False, image
                 continue
 
         if ver == 360:
-            for idx,i in enumerate(range(24)):
-                car_image = car_ims[:,:,:,i,3]
-                car_image = cv2.resize(car_image, (image_size,image_size))
+            for idx, i in enumerate(range(24)):
+                car_image = car_ims[:, :, :, i, 3]
+                car_image = cv2.resize(car_image, (image_size, image_size))
                 if gray:
                     car_image = cv2.cvtColor(car_image, cv2.COLOR_BGR2GRAY)
-                    car_image = np.repeat(car_image[:,:,None], 3, 2)
-                car_image = car_image.transpose(2,0,1)
-                car_image = car_image.astype(np.float32)/255.
-                car_images.append( car_image )
+                    car_image = np.repeat(car_image[:, :, None], 3, 2)
+                car_image = car_image.transpose(2, 0, 1)
+                car_image = car_image.astype(np.float32) / 255.
+                car_images.append(car_image)
                 if angle_info:
                     classes.append(idx)
 
         elif ver == 180:
-            for idx,i in enumerate(range(5,-1,-1) + range(23,18,-1)):
-                car_image = car_ims[:,:,:,i,3]
-                car_image = cv2.resize(car_image, (image_size,image_size))
+            for idx, i in enumerate(list(range(5, -1, -1)) + list(range(23, 18, -1))):
+                car_image = car_ims[:, :, :, i, 3]
+                car_image = cv2.resize(car_image, (image_size, image_size))
                 if gray:
                     car_image = cv2.cvtColor(car_image, cv2.COLOR_BGR2GRAY)
-                    car_image = np.repeat(car_image[:,:,None], 3, 2)
-                car_image = car_image.transpose(2,0,1)
-                car_image = car_image.astype(np.float32)/255.
-                car_images.append( car_image )
-		if angle_info:
-		    classes.append( idx )
+                    car_image = np.repeat(car_image[:, :, None], 3, 2)
+                car_image = car_image.transpose(2, 0, 1)
+                car_image = car_image.astype(np.float32) / 255.
+                car_images.append(car_image)
+                if angle_info:
+                    classes.append(idx)
 
         elif ver == 90:
-            for idx,i in enumerate(range(5,-1,-1)):
-                car_image = car_ims[:,:,:,i,3]
-                car_image = cv2.resize(car_image, (image_size,image_size))
-                car_image = car_image.transpose(2,0,1)
-                car_image = car_image.astype(np.float32)/255.
-                car_images.append( car_image )
+            for idx, i in enumerate(range(5, -1, -1)):
+                car_image = car_ims[:, :, :, i, 3]
+                car_image = cv2.resize(car_image, (image_size, image_size))
+                car_image = car_image.transpose(2, 0, 1)
+                car_image = car_image.astype(np.float32) / 255.
+                car_images.append(car_image)
                 if angle_info:
-                    classes.append( idx )
+                    classes.append(idx)
 
     car_images = car_images[::interval]
 
     if angle_info:
         return np.stack(car_images), np.array(classes)
 
-    return np.stack( car_images )
+    return np.stack(car_images)
+
 
 def get_faces_3d(test=False, half=None):
-    files = os.listdir( face_3d_path )
-    image_files = filter(lambda x: x.endswith('.png'), files)
+    files = os.listdir(face_3d_path)
+    image_files = [x for x in files if x.endswith('.png')]
 
     df = pd.DataFrame({'image_path': image_files})
     df['id'] = df['image_path'].map(lambda x: x.split('/')[-1][:20])

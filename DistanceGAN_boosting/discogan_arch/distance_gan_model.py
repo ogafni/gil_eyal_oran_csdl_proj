@@ -52,8 +52,8 @@ class DistanceGAN(DiscoGAN):
         num_pairs = 0
         min_length = min(len(As), len(Bs))
 
-        for i in xrange(min_length - 1):
-            for j in xrange(i + 1, min_length):
+        for i in range(min_length - 1):
+            for j in range(i + 1, min_length):
                 num_pairs += 1
                 loss_distance_A_ij, loss_distance_B_ij = \
                     self.get_individual_distance_loss(As[i], As[j],
@@ -76,14 +76,14 @@ class DistanceGAN(DiscoGAN):
 
         # If self distance computed std for top and bottom half
         if self.args.use_self_distance:
-            for i in xrange(num_items):
+            for i in range(num_items):
                 var_half_1, var_half_2 = torch.chunk(vars[i], 2, dim=2)
                 std_sum += np.square(self.as_np(self.distance(var_half_1, var_half_2)) - expectation)
             return np.sqrt(std_sum / num_items)
 
         # Otherwise compute std for all pairs of images
-        for i in xrange(num_items - 1):
-            for j in xrange(i + 1, num_items):
+        for i in range(num_items - 1):
+            for j in range(i + 1, num_items):
                 num_pairs += 1
                 std_sum += np.square(self.as_np(self.distance(vars[i], vars[j])) - expectation)
 
@@ -96,15 +96,15 @@ class DistanceGAN(DiscoGAN):
 
         # If self distance computed expectation for top and bottom half
         if self.args.use_self_distance:
-            for i in xrange(num_items):
+            for i in range(num_items):
                 # Split image to top and bottom half
                 var_half_1, var_half_2 = torch.chunk(vars[i], 2, dim=2)
                 distance_sum += self.as_np(self.distance(var_half_1, var_half_2))
             return distance_sum / num_items
 
         # Otherwise compute expectation for all pairs of images
-        for i in xrange(num_items - 1):
-            for j in xrange(i + 1, num_items):
+        for i in range(num_items - 1):
+            for j in range(i + 1, num_items):
                 num_pairs += 1
                 distance_sum += self.as_np(self.distance(vars[i], vars[j]))
 
@@ -163,10 +163,10 @@ class DistanceGAN(DiscoGAN):
         self.std_A = self.get_std(num_vars_A, A_vars, self.expectation_A)[0].astype(float)
         self.std_B = self.get_std(num_vars_B, B_vars, self.expectation_B)[0].astype(float)
 
-        print('Expectation for dataset A: %f' % self.expectation_A)
-        print('Expectation for dataset B: %f' % self.expectation_B)
-        print('Std for dataset A: %f' % self.std_A)
-        print('Std for dataset B: %f' % self.std_B)
+        print(('Expectation for dataset A: %f' % self.expectation_A))
+        print(('Expectation for dataset B: %f' % self.expectation_B))
+        print(('Std for dataset A: %f' % self.std_A))
+        print(('Std for dataset B: %f' % self.std_B))
 
     def run(self):
 
@@ -277,13 +277,13 @@ class DistanceGAN(DiscoGAN):
             self.optim_gen.step()
 
         if self.iters % self.args.log_interval == 0:
-            print "---------------------"
-            print "GEN Loss:", self.as_np(self.gen_loss_A.mean()), self.as_np(self.gen_loss_B.mean())
-            print "Feature Matching Loss:", self.as_np(self.fm_loss_A.mean()), self.as_np(self.fm_loss_B.mean())
-            print "DIS Loss:", self.as_np(self.dis_loss_A.mean()), self.as_np(self.dis_loss_B.mean())
-            print "Distance Loss:", self.as_np(self.loss_distance_A.mean()), self.as_np(self.loss_distance_B.mean())
+            print("---------------------")
+            print("GEN Loss:", self.as_np(self.gen_loss_A.mean()), self.as_np(self.gen_loss_B.mean()))
+            print("Feature Matching Loss:", self.as_np(self.fm_loss_A.mean()), self.as_np(self.fm_loss_B.mean()))
+            print("DIS Loss:", self.as_np(self.dis_loss_A.mean()), self.as_np(self.dis_loss_B.mean()))
+            print("Distance Loss:", self.as_np(self.loss_distance_A.mean()), self.as_np(self.loss_distance_B.mean()))
             if self.args.use_reconst_loss:
-                print "RECON Loss:", self.as_np(self.recon_loss_A.mean()), self.as_np(self.recon_loss_B.mean())
+                print("RECON Loss:", self.as_np(self.recon_loss_A.mean()), self.as_np(self.recon_loss_B.mean()))
 
         if self.iters % self.args.image_save_interval == 0:
             AB = self.generator_B(self.test_A)
