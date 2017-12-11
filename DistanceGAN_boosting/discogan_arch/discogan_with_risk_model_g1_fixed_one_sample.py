@@ -200,8 +200,10 @@ class Disco_with_riskGAN(DiscoGAN):
         # one_sample_dis_loss_A_1, one_sample_gen_loss_A_1 = self.get_gan_loss(A_dis_real_1, A_dis_fake_1)
         # one_sample_fm_loss_A_1 = self.get_fm_loss(A_feats_real_1, A_feats_fake_1)
 
-        A_dis_real_2, A_feats_real_2 = self.discriminator_A_2(one_sample_A[one_sample_index: one_sample_index+1])
-        A_dis_fake_2, A_feats_fake_2 = self.discriminator_A_2(one_sample_BA_2_full[one_sample_index: one_sample_index+1])
+        A_dis_real_2, A_feats_real_2 = self.discriminator_A_2(one_sample_A[one_sample_index:\
+                                                                           one_sample_index+1])
+        A_dis_fake_2, A_feats_fake_2 = self.discriminator_A_2(one_sample_BA_2_full[one_sample_index:\
+                                                                                   one_sample_index+1])
 
         one_sample_dis_loss_A_2, one_sample_gen_loss_A_2 = self.get_gan_loss(A_dis_real_2, A_dis_fake_2)
         one_sample_fm_loss_A_2 = self.get_fm_loss(A_feats_real_2, A_feats_fake_2)
@@ -213,16 +215,20 @@ class Disco_with_riskGAN(DiscoGAN):
         # one_sample_dis_loss_B_1, one_sample_gen_loss_B_1 = self.get_gan_loss(B_dis_real_1, B_dis_fake_1)
         # one_sample_fm_loss_B_1 = self.get_fm_loss(B_feats_real_1, B_feats_fake_1)
 
-        B_dis_real_2, B_feats_real_2 = self.discriminator_B_2(one_sample_B[one_sample_index: one_sample_index+1])
-        B_dis_fake_2, B_feats_fake_2 = self.discriminator_B_2(one_sample_AB_2_full[one_sample_index: one_sample_index+1])
+        B_dis_real_2, B_feats_real_2 = self.discriminator_B_2(one_sample_B[one_sample_index:\
+                                                                           one_sample_index+1])
+        B_dis_fake_2, B_feats_fake_2 = self.discriminator_B_2(one_sample_AB_2_full[one_sample_index:\
+                                                                                   one_sample_index+1])
 
         one_sample_dis_loss_B_2, one_sample_gen_loss_B_2 = self.get_gan_loss(B_dis_real_2, B_dis_fake_2)
         one_sample_fm_loss_B_2 = self.get_fm_loss(B_feats_real_2, B_feats_fake_2)
 
         # Correlation loss
         # Distance between generator 1 and generator 2's output
-        correlation_loss_AB_2 = - self.correlation_criterion(one_sample_AB_2, self.to_no_grad_var(one_sample_AB_1))
-        correlation_loss_BA_2 = - self.correlation_criterion(one_sample_BA_2, self.to_no_grad_var(one_sample_BA_1))
+        correlation_loss_AB_2 = - self.correlation_criterion(one_sample_AB_2,\
+                                                             self.to_no_grad_var(one_sample_AB_1))
+        correlation_loss_BA_2 = - self.correlation_criterion(one_sample_BA_2,\
+                                                             self.to_no_grad_var(one_sample_BA_1))
 
         # Total Loss
         if self.iters < self.args.gan_curriculum:
