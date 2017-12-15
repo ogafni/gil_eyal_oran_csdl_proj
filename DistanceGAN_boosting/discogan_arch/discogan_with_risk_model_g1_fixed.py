@@ -9,6 +9,7 @@ from torch.autograd import Variable
 
 from dataset import *
 from disco_gan_model import DiscoGAN
+from discogan_arch_options.options import Options
 from model import *
 
 
@@ -382,5 +383,6 @@ class Disco_with_riskGAN(DiscoGAN):
 
 
 if __name__ == "__main__":
-    model = Disco_with_riskGAN()
+    options = Options.from_cmd()
+    model = Disco_with_riskGAN(options)
     model.run()

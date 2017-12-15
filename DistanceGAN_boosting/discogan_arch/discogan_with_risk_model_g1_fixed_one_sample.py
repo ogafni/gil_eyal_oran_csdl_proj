@@ -6,6 +6,7 @@ import torch.nn as nn
 import torch.optim as optim
 from progressbar import ETA, Bar, Percentage, ProgressBar
 from torch.autograd import Variable
+from discogan_arch_options.options import Options
 
 from dataset import *
 from disco_gan_model import DiscoGAN
@@ -447,5 +448,6 @@ class Disco_with_riskGAN(DiscoGAN):
 
 
 if __name__ == "__main__":
-    model = Disco_with_riskGAN()
+    options = Options.from_cmd()
+    model = Disco_with_riskGAN(options)
     model.run()

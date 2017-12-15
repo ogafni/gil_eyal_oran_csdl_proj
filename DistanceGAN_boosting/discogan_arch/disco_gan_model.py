@@ -188,10 +188,8 @@ class DiscoGAN(object):
 
         return A, B
 
-    def __init__(self):
-        options = Options()
-        options.initialize()
-        self.args = options.parser.parse_args()
+    def __init__(self, options):
+        self.args = options
 
     def initialize(self):
 
@@ -515,5 +513,6 @@ class DiscoGAN(object):
                        os.path.join(self.model_path, 'model_dis_B-' + str(self.iters / self.args.model_save_interval)))
 
 if __name__ == "__main__":
-    model = DiscoGAN()
+    options = Options.from_cmd()
+    model = DiscoGAN(options)
     model.run()
