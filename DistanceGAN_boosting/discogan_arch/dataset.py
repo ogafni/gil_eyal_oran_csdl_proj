@@ -5,8 +5,7 @@ import pandas as pd
 from scipy.misc import imresize
 import scipy.io
 
-
-dataset_path = './datasets/'
+dataset_path = os.path.abspath(os.path.join(os.path.dirname(__file__),'..','datasets'))
 celebA_path = os.path.join(dataset_path, 'celebA')
 handbag_path = os.path.join(dataset_path, 'edges2handbags')
 maps_path = os.path.join(dataset_path, 'maps')
