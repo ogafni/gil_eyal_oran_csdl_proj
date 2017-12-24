@@ -1,3 +1,5 @@
+import math
+
 def calc_error_bound_and_gt(samples, labels, G1_AB, G2_AB, G1_BA, G2_BA):
     """ 
     This function calculates the Error bound (correlation loss) per batch
@@ -29,24 +31,25 @@ def samples_order_by_loss(S_A, S_B, G1_0_A, G2_0_A, G1_0_B, G2_0_B, n_batch=64, 
     - loss order (max-->min)
     - loss vector (unordered)
     - ground truth loss vector
-    Example run-line: 
-        J_loss_order, J_loss_val, groud_truth_loss = samples_order_by_loss(S_A, S_B, G1_0_A, G2_0_A, G1_0_B, G2_0_B, n_batch=64, print_freq=100)
     """
     n_samples = len(S_A) # number of samples in the dataset
     print('Number of samples: ',n_samples)
     J_loss_val = np.zeros(n_samples, dtype=float) # initalize loss vec
     groud_truth_loss = np.zeros(n_samples, dtype=float) # initalize ground truth loss vec
-    n_iter = n_samples // n_batch
+    n_iter = math.ceil(n_samples/n_batch)
     print('Number of iterations: ',n_iter)
-    for idx in np.arange(n_iter): 
-        J_loss_val[idx*n_batch: (idx+1)*n_batch], groud_truth_loss[idx*n_batch: (idx+1)*n_batch] =\
-        calc_error_bound_and_gt(S_A[idx*n_batch: (idx+1)*n_batch, :, :, :],\
-                                S_B[idx*n_batch: (idx+1)*n_batch, :, :, :],\
-                                G1_0_A, G2_0_A, G1_0_B, G2_0_B) # calculate error bound (loss) per batch
+    
+    for idx in np.arange(n_iter):
+        start = idx*n_batch
+        end = min(start+n_batch, n_samples)
+        S_A_batch = S_A[start: end, :, :, :]
+        S_B_batch = S_B[start: end, :, :, :]
+        J_loss_val[start: end], groud_truth_loss[start: end] =\
+        calc_error_bound_and_gt(S_A_batch,S_B_batch,G1_0_A, G2_0_A, G1_0_B, G2_0_B) # calculate error bound (loss) per batch
         if idx % print_freq == 0: # printing frequency
-            print('Done calculating ', idx*n_batch, ' samples')
-    print ('Error bound & ground truth calculated for all samples')
-    J_loss_order = J_loss_val.argsort()[::-1][:len(J_loss_val)] # sort max-->min
+            print('Completed ', idx, ' iterations (',idx*n_batch,'samples )')
+    print ('Done calculating error bound & ground truth for all samples')
+    J_loss_order = J_loss_val.argsort()[::-1] # sort max-->min
     return J_loss_order, J_loss_val, groud_truth_loss 
 
 ### Vectorized implementation (Issues with Pytorch Variable?)
@@ -78,7 +81,4 @@ def reorder_samples_by_loss(J_loss_order, S):
             S_A_reordered = S_A_reordered.cuda(0)
             S_B_reordered = S_B_reordered.cuda(0)
     """
-    S_new = torch.Tensor(S.size()).cuda()
-    for idx in np.arange(S.size()[0]):
-        S_new[idx, :, :, :] = S.data[J_loss_order[idx], :, :, :]
-    return S_new
+    return S_A[J_loss_order.tolist()]
