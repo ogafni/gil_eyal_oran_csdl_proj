@@ -11,7 +11,9 @@ class Options():
                  default_correlation_rate=1, number_of_samples=500, not_all_samples=False, port=8097, test_mode=False,
                  which_epoch_load=3, one_sample_index=0, continue_training=False, indiv_gan_rate=1,
                  pretrained_g1_path_A='/media/data2/sagieb/DistanceGAN_risk/results/male_female_reg_exps/male_female_models_num_layers_4_second_5/celebA/Male/discogan/Generator_1/',
-                 pretrained_g1_path_B='/media/data2/sagieb/DistanceGAN_risk/results/male_female_reg_exps/male_female_models_num_layers_4_second_5/celebA/Male/discogan/Generator_1/'):
+                 pretrained_g1_path_B='/media/data2/sagieb/DistanceGAN_risk/results/male_female_reg_exps/male_female_models_num_layers_4_second_5/celebA/Male/discogan/Generator_1/',
+                 pretrained_g2_path_A='/media/data2/sagieb/DistanceGAN_risk/results/male_female_reg_exps/male_female_models_num_layers_4_second_5/celebA/Male/discogan/Generator_1/',
+                 pretrained_g2_path_B='/media/data2/sagieb/DistanceGAN_risk/results/male_female_reg_exps/male_female_models_num_layers_4_second_5/celebA/Male/discogan/Generator_1/'):
         self.cuda = cuda
         self.task_name = task_name
         self.epoch_size = epoch_size
@@ -51,6 +53,8 @@ class Options():
         self.indiv_gan_rate = indiv_gan_rate
         self.pretrained_g1_path_A = pretrained_g1_path_A
         self.pretrained_g1_path_B = pretrained_g1_path_B
+        self.pretrained_g2_path_A = pretrained_g2_path_A
+        self.pretrained_g2_path_B = pretrained_g2_path_B
 
     @classmethod
     def from_cmd(cls):
@@ -122,6 +126,11 @@ class CmdOptions(object):
         self.parser.add_argument('--pretrained_g1_path_A', type=str,
                                  default='/media/data2/sagieb/DistanceGAN_risk/results/male_female_reg_exps/male_female_models_num_layers_4_second_5/celebA/Male/discogan/Generator_1/')
         self.parser.add_argument('--pretrained_g1_path_B', type=str,
+                                 default='/media/data2/sagieb/DistanceGAN_risk/results/male_female_reg_exps/male_female_models_num_layers_4_second_5/celebA/Male/discogan/Generator_1/')
+
+        self.parser.add_argument('--pretrained_g2_path_A', type=str,
+                                 default='/media/data2/sagieb/DistanceGAN_risk/results/male_female_reg_exps/male_female_models_num_layers_4_second_5/celebA/Male/discogan/Generator_1/')
+        self.parser.add_argument('--pretrained_g2_path_B', type=str,
                                  default='/media/data2/sagieb/DistanceGAN_risk/results/male_female_reg_exps/male_female_models_num_layers_4_second_5/celebA/Male/discogan/Generator_1/')
 
     def get_args(self):
