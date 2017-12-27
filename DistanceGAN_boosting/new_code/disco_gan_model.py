@@ -7,7 +7,6 @@ from itertools import chain
 import scipy
 from tensorboardX import SummaryWriter
 
-
 from .error_bound_calc_functions import calc_mean_gt_error
 from .utils import *
 from .model import Discriminator, Generator
