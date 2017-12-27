@@ -47,8 +47,8 @@ def save_images(A, B, G_A, G_B, version, result_path):
     n_testset = min(A.size()[0], B.size()[0])
 
     subdir_path = os.path.join(result_path, version)
-    if not os.path.exists(subdir_path):
-        os.makedirs(subdir_path)
+    os.makedirs(subdir_path, exist_ok=True)
+
     for im_idx in range(n_testset):
         A_val = A[im_idx].cpu().data.numpy().transpose(1, 2, 0) * 255.
         B_val = B[im_idx].cpu().data.numpy().transpose(1, 2, 0) * 255.
@@ -75,10 +75,8 @@ class DiscoGAN():
         self.model_path = self.args.model_path
         self.writer_1 = SummaryWriter(os.path.join(self.result_path, "log"))
 
-        if not os.path.exists(self.result_path):
-            os.makedirs(self.result_path)
-        if not os.path.exists(self.model_path):
-            os.makedirs(self.model_path)
+        os.makedirs(self.result_path, exist_ok=True)
+        os.makedirs(self.model_path, exist_ok=True)
 
         lr = self.args.learning_rate
         self.generator_A, self.generator_B, self.optim_gen = get_generators(self.cuda, self.args.num_layers, lr)

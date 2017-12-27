@@ -15,10 +15,9 @@ class DiscoGANRisk(DiscoGAN):
 
         self.result_path_1 = os.path.join(self.result_path, 'G1')
         self.result_path_2 = os.path.join(self.result_path, 'G2')
-        if not os.path.exists(self.result_path_1):
-            os.makedirs(self.result_path_1)
-        if not os.path.exists(self.result_path_2):
-            os.makedirs(self.result_path_2)
+        os.makedirs(self.result_path_1, exist_ok=True)
+        os.makedirs(self.result_path_2, exist_ok=True)
+
         if self.args.fixed_g1:
             gen_A_path = os.path.join(self.args.pretrained_g1_path_A, 'model_gen_A-' + str(self.args.which_epoch_load))
             self.generator_A_1 = torch.load(gen_A_path)
