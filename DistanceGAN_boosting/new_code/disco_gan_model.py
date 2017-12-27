@@ -153,6 +153,14 @@ class DiscoGAN():
 
         return dis_loss_A, dis_loss_B, gen_loss_A_total, gen_loss_B_total, recon_loss_A, recon_loss_B
 
+    def _log_state(self, A_paths, B_paths, data_A_val, data_B_val):
+        if self.iters % self.args.log_interval == 0:
+            self._log_losses(A_paths, B_paths)
+        if self.iters % self.args.image_save_interval == 0:
+            self._save_images(data_A_val, data_B_val)
+        if self.iters % self.args.model_save_interval == 0:
+            self._save_model()
+
     def train(self, data_A, data_B, data_A_val, data_B_val):
         n_batches = math.ceil(len(data_A) / self.args.batch_size)
         print('%d batches per epoch' % n_batches)
@@ -193,11 +201,6 @@ class DiscoGAN():
                     self.optim_gen.step()
 
                 # log
-                if self.iters % self.args.log_interval == 0:
-                    self._log_losses(A_paths, B_paths)
-                if self.iters % self.args.image_save_interval == 0:
-                    self._save_images(data_A_val, data_B_val)
-                if self.iters % self.args.model_save_interval == 0:
-                    self._save_model()
+                self._log_state(A_paths, B_paths, data_A_val, data_B_val)
 
                 self.iters += 1

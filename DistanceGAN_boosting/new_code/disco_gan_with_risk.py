@@ -56,14 +56,6 @@ class DiscoGANRisk(DiscoGAN):
         self.writer_1.add_scalar('Bound A', error_bound_A, self.iters)
         self.writer_1.add_scalar('Bound B', error_bound_B, self.iters)
 
-    def _log_state(self, A_paths, B_paths, data_A_val, data_B_val):
-        if self.iters % self.args.log_interval == 0:
-            self._log_losses(A_paths, B_paths)
-        if self.iters % self.args.image_save_interval == 0:
-            self._save_images(data_A_val, data_B_val)
-        if self.iters % self.args.model_save_interval == 0:
-            self._save_model()
-
     def _calc_corr_loss(self, A, B):
         AB_1 = self.generator_B(A)
         BA_1 = self.generator_A(B)
@@ -91,20 +83,11 @@ class DiscoGANRisk(DiscoGAN):
             for i in range(n_batches):
                 pbar.update(i)
 
-                self.generator_A.zero_grad()
-                self.generator_B.zero_grad()
-                self.discriminator_A.zero_grad()
-                self.discriminator_B.zero_grad()
-
-                self.generator_A_G2.zero_grad()
-                self.generator_B_G2.zero_grad()
-                self.discriminator_A_G2.zero_grad()
-                self.discriminator_B_G2.zero_grad()
-
+                # read batch data
                 A_paths, B_paths = get_batch_data(A_epoch, B_epoch, i, self.args.batch_size)
                 A, B = read_images(A_paths, B_paths, self.args.image_size, self.cuda)
 
-                # Total Loss
+                # calculate losses
                 if self.iters < self.args.gan_curriculum:
                     rate = self.args.starting_rate
                     correlation_rate = self.args.starting_correlation_rate
@@ -119,7 +102,7 @@ class DiscoGANRisk(DiscoGAN):
                     self.generator_A_G2, self.generator_B_G2, self.discriminator_A_G2, self.discriminator_B_G2, A, B,
                     rate)
 
-                # Correlation loss
+                # correlation loss
                 correlation_loss_AB, correlation_loss_BA = self._calc_corr_loss(A, B)
 
                 self.gen_loss_A_2 += correlation_loss_AB * correlation_rate
@@ -130,6 +113,7 @@ class DiscoGANRisk(DiscoGAN):
                 self.gen_loss_2 = self.gen_loss_A_2 + self.gen_loss_B_2
                 self.dis_loss_2 = self.dis_loss_A_2 + self.dis_loss_B_2
 
+                # optimize
                 if self.iters % self.args.update_interval == 0:
                     self.dis_loss_1.backward()
                     self.optim_dis.step()
@@ -141,6 +125,7 @@ class DiscoGANRisk(DiscoGAN):
                     self.gen_loss_2.backward()
                     self.optim_gen_G2.step()
 
+                # log
                 self._log_state(A_paths, B_paths, data_A_val, data_B_val)
 
                 self.iters += 1
