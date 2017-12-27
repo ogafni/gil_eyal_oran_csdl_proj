@@ -19,6 +19,11 @@ class DiscoGANRisk(DiscoGAN):
             os.makedirs(self.result_path_1)
         if not os.path.exists(self.result_path_2):
             os.makedirs(self.result_path_2)
+        if self.args.fixed_g1:
+            gen_A_path = os.path.join(self.args.pretrained_g1_path_A, 'model_gen_A-' + str(self.args.which_epoch_load))
+            self.generator_A_1 = torch.load(gen_A_path)
+            gen_B_path = os.path.join(self.args.pretrained_g1_path_B, 'model_gen_B-' + str(self.args.which_epoch_load))
+            self.generator_B_1 = torch.load(gen_B_path)
 
         lr = self.args.learning_rate
         self.generator_A_G2, self.generator_B_G2, self.optim_gen_G2 = get_generators(self.cuda, self.args.num_layers,
@@ -115,13 +120,15 @@ class DiscoGANRisk(DiscoGAN):
 
                 # optimize
                 if self.iters % self.args.update_interval == 0:
-                    self.dis_loss_1.backward()
-                    self.optim_dis.step()
+                    if not self.args.fixed_g1:
+                        self.dis_loss_1.backward()
+                        self.optim_dis.step()
                     self.dis_loss_2.backward()
                     self.optim_dis_G2.step()
                 else:
-                    self.gen_loss_1.backward()
-                    self.optim_gen.step()
+                    if not self.args.fixed_g1:
+                        self.gen_loss_1.backward()
+                        self.optim_gen.step()
                     self.gen_loss_2.backward()
                     self.optim_gen_G2.step()
 
