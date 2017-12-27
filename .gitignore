@@ -1,3 +1,8 @@
 .idea/
 DistanceGAN_boosting/datasets/
 DistanceGAN_boosting/discogan_arch/results/
+*.pyc
+DistanceGAN_boosting/venv/
+DistanceGAN_boosting/models/
+DistanceGAN_boosting/results/
+*-checkpoint.ipynb
