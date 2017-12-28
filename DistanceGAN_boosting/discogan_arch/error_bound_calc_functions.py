@@ -1,6 +1,18 @@
 import math
+from disco_gan_model import DiscoGAN
+from discogan_with_risk_model_g1_fixed_one_sample import Disco_with_riskGAN
+from discogan_arch_options.options import Options
+from dataset import *
+import numpy as np
+import torch
+import torch.nn as nn
+from torch.autograd import Variable
+import sys
+import os
+import scipy.stats
+import math
 
-def calc_error_bound_and_gt(samples, labels, G1_AB, G2_AB, G1_BA, G2_BA):
+def calc_error_bound_and_gt(samples, labels, G1_AB, G2_AB, G1_BA, G2_BA, model_discogan_with_risk):
     """ 
     This function calculates the Error bound (correlation loss) per batch
     & the ground truth for G1
@@ -24,7 +36,7 @@ def calc_error_bound_and_gt(samples, labels, G1_AB, G2_AB, G1_BA, G2_BA):
                                                        model_discogan_with_risk.to_no_grad_var(labels[sample_idx]))
     return correlation_loss_AB_12, ground_truth_loss_AB_G1
 
-def samples_order_by_loss(S_A, S_B, G1_0_A, G2_0_A, G1_0_B, G2_0_B, n_batch=64, print_freq=100):
+def samples_order_by_loss(S_A, S_B, G1_0_A, G2_0_A, G1_0_B, G2_0_B, model_discogan_with_risk, n_batch=64, print_freq=100):
     """
     This function sorts a dataset of samples by the error bound (correlation loss)
     It returns a vector of indices, representing the following:
@@ -45,12 +57,37 @@ def samples_order_by_loss(S_A, S_B, G1_0_A, G2_0_A, G1_0_B, G2_0_B, n_batch=64, 
         S_A_batch = S_A[start: end, :, :, :]
         S_B_batch = S_B[start: end, :, :, :]
         J_loss_val[start: end], groud_truth_loss[start: end] =\
-        calc_error_bound_and_gt(S_A_batch,S_B_batch,G1_0_A, G2_0_A, G1_0_B, G2_0_B) # calculate error bound (loss) per batch
+        calc_error_bound_and_gt(S_A_batch,S_B_batch,G1_0_A, G2_0_A, G1_0_B, G2_0_B, model_discogan_with_risk) # calculate error bound (loss) per batch
         if idx % print_freq == 0: # printing frequency
             print('Completed ', idx, ' iterations (',idx*n_batch,'samples )')
     print ('Done calculating error bound & ground truth for all samples')
     J_loss_order = J_loss_val.argsort()[::-1] # sort max-->min
     return J_loss_order, J_loss_val, groud_truth_loss 
+
+def samples_order_by_loss_from_filenames(dataset_A, dataset_B, G1_0_A, G2_0_A, G1_0_B, G2_0_B, options, n_batch=64, print_freq=100):
+    """
+    enveloping function for the samples_order_by_loss, receiving list of filenames instead of arrays with images
+    :param dataset_A: file names from dataset A
+    :param dataset_B: file names from dataset B
+    :param G1_0_A:
+    :param G2_0_A:
+    :param G1_0_B:
+    :param G2_0_B:
+    :param options: needed for creating a discogan class with correct task etc. so the internal samples_order_by_loss could work
+    :param n_batch:
+    :param print_freq:
+    :return:
+    """
+    model_discogan_with_risk = Disco_with_riskGAN(options)
+    model_discogan_with_risk.initialize()
+    test_A, test_B = model_discogan_with_risk.get_images(dataset_A, dataset_B)
+    test_A = Variable(torch.FloatTensor(test_A))
+    test_B = Variable(torch.FloatTensor(test_B))
+    if options.cuda:
+        test_A = test_A.cuda(0)
+        test_B = test_B.cuda(0)
+    return samples_order_by_loss(test_A, test_B, G1_0_A, G2_0_A, G1_0_B, G2_0_B, model_discogan_with_risk, n_batch, print_freq)
+
 
 ### Vectorized implementation (Issues with Pytorch Variable?)
 #
