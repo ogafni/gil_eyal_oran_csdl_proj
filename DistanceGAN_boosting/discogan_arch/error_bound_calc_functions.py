@@ -65,6 +65,19 @@ def samples_order_by_loss(S_A, S_B, G1_0_A, G2_0_A, G1_0_B, G2_0_B, model_discog
     return J_loss_order, J_loss_val, groud_truth_loss 
 
 def samples_order_by_loss_from_filenames(dataset_A, dataset_B, G1_0_A, G2_0_A, G1_0_B, G2_0_B, options, n_batch=64, print_freq=100):
+    """
+    enveloping function for the samples_order_by_loss, receiving list of filenames instead of arrays with images
+    :param dataset_A: file names from dataset A
+    :param dataset_B: file names from dataset B
+    :param G1_0_A:
+    :param G2_0_A:
+    :param G1_0_B:
+    :param G2_0_B:
+    :param options: needed for creating a discogan class with correct task etc. so the internal samples_order_by_loss could work
+    :param n_batch:
+    :param print_freq:
+    :return:
+    """
     model_discogan_with_risk = Disco_with_riskGAN(options)
     model_discogan_with_risk.initialize()
     test_A, test_B = model_discogan_with_risk.get_images(dataset_A, dataset_B)
