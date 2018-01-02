@@ -4,7 +4,6 @@ import torch.nn as nn
 from torch import optim
 from progressbar import ETA, Bar, Percentage, ProgressBar
 from itertools import chain
-import scipy
 from tensorboardX import SummaryWriter
 
 from .error_bound_calc_functions import calc_mean_gt_error
@@ -39,31 +38,10 @@ def get_discriminators(cuda, learning_rate):
     return discriminator_A, discriminator_B, optim_dis
 
 
-def save_images(A, B, G_A, G_B, version, result_path):
-    AB = G_B(A)
-    BA = G_A(B)
-    ABA = G_A(AB)
-    BAB = G_B(BA)
-    n_testset = min(A.size()[0], B.size()[0])
-
-    subdir_path = os.path.join(result_path, version)
-    os.makedirs(subdir_path, exist_ok=True)
-
-    for im_idx in range(n_testset):
-        A_val = A[im_idx].cpu().data.numpy().transpose(1, 2, 0) * 255.
-        B_val = B[im_idx].cpu().data.numpy().transpose(1, 2, 0) * 255.
-        BA_val = BA[im_idx].cpu().data.numpy().transpose(1, 2, 0) * 255.
-        ABA_val = ABA[im_idx].cpu().data.numpy().transpose(1, 2, 0) * 255.
-        AB_val = AB[im_idx].cpu().data.numpy().transpose(1, 2, 0) * 255.
-        BAB_val = BAB[im_idx].cpu().data.numpy().transpose(1, 2, 0) * 255.
-
-        filename_prefix = os.path.join(subdir_path, str(im_idx))
-        scipy.misc.imsave(filename_prefix + '.A.jpg', A_val.astype(np.uint8)[:, :, ::-1])
-        scipy.misc.imsave(filename_prefix + '.B.jpg', B_val.astype(np.uint8)[:, :, ::-1])
-        scipy.misc.imsave(filename_prefix + '.BA.jpg', BA_val.astype(np.uint8)[:, :, ::-1])
-        scipy.misc.imsave(filename_prefix + '.AB.jpg', AB_val.astype(np.uint8)[:, :, ::-1])
-        scipy.misc.imsave(filename_prefix + '.ABA.jpg', ABA_val.astype(np.uint8)[:, :, ::-1])
-        scipy.misc.imsave(filename_prefix + '.BAB.jpg', BAB_val.astype(np.uint8)[:, :, ::-1])
+def save_images_list(images, suffix, version, board_writer):
+    for i, image in enumerate(images):
+        name = '{0}_{1}'.format(i, suffix)
+        board_writer.add_image(name, image, version)
 
 
 class DiscoGAN():
@@ -73,7 +51,7 @@ class DiscoGAN():
 
         self.result_path = self.args.result_path
         self.model_path = self.args.model_path
-        self.writer_1 = SummaryWriter(os.path.join(self.result_path, "log"))
+        self.board_writer = SummaryWriter(os.path.join(self.result_path, "log"))
 
         os.makedirs(self.result_path, exist_ok=True)
         os.makedirs(self.model_path, exist_ok=True)
@@ -86,6 +64,8 @@ class DiscoGAN():
         self.gan_criterion = nn.BCELoss()
         self.feat_criterion = nn.HingeEmbeddingLoss()
 
+        self.first_image_write = True
+
     def _save_model(self):
         version = str(int(self.iters / self.args.model_save_interval))
         torch.save(self.generator_A, os.path.join(self.model_path, 'model_gen_A-' + version))
@@ -96,27 +76,36 @@ class DiscoGAN():
     def _save_images(self, A, B):
         A, B = read_images(A, B, self.args.image_size, self.cuda)
         version = str(int(self.iters / self.args.image_save_interval))
-        save_images(A, B, self.generator_A, self.generator_B, version, self.result_path)
+        if self.first_image_write:
+            save_images_list(A, 'A', version, self.board_writer)
+            save_images_list(B, 'B', version, self.board_writer)
+            self.first_image_write = False
+        AB = self.generator_B(A)
+        save_images_list(AB, 'AB', version, self.board_writer)
+        # freeing some precious GPU space
+        del AB
+        BA = self.generator_A(B)
+        save_images_list(BA, 'BA', version, self.board_writer)
 
     def _log_losses(self, A, B):
         A, B = read_images(A, B, self.args.image_size, self.cuda, aligned=True)
         loss = nn.L1Loss()
         gt_error_A = calc_mean_gt_error(B, A, self.generator_A, loss)
         gt_error_B = calc_mean_gt_error(A, B, self.generator_B, loss)
-        self.writer_1.add_scalar('GT Error A', gt_error_A, self.iters)
-        self.writer_1.add_scalar('GT Error B', gt_error_B, self.iters)
+        self.board_writer.add_scalar('GT Error A', gt_error_A, self.iters)
+        self.board_writer.add_scalar('GT Error B', gt_error_B, self.iters)
 
         l2_A = get_model_l2(self.generator_A)
         B_l2 = get_model_l2(self.generator_B)
-        self.writer_1.add_scalar('L2 A', l2_A, self.iters)
-        self.writer_1.add_scalar('L2 B', B_l2, self.iters)
+        self.board_writer.add_scalar('L2 A', l2_A, self.iters)
+        self.board_writer.add_scalar('L2 B', B_l2, self.iters)
 
-        self.writer_1.add_scalar('Loss A GEN', as_np(self.gen_loss_A.mean()), self.iters)
-        self.writer_1.add_scalar('Loss B GEN', as_np(self.gen_loss_B.mean()), self.iters)
-        self.writer_1.add_scalar('Loss A DIS', as_np(self.dis_loss_A.mean()), self.iters)
-        self.writer_1.add_scalar('Loss B DIS', as_np(self.dis_loss_B.mean()), self.iters)
-        self.writer_1.add_scalar('Loss A RECON', as_np(self.recon_loss_A.mean()), self.iters)
-        self.writer_1.add_scalar('Loss B RECON', as_np(self.recon_loss_B.mean()), self.iters)
+        self.board_writer.add_scalar('Loss A GEN', as_np(self.gen_loss_A.mean()), self.iters)
+        self.board_writer.add_scalar('Loss B GEN', as_np(self.gen_loss_B.mean()), self.iters)
+        self.board_writer.add_scalar('Loss A DIS', as_np(self.dis_loss_A.mean()), self.iters)
+        self.board_writer.add_scalar('Loss B DIS', as_np(self.dis_loss_B.mean()), self.iters)
+        self.board_writer.add_scalar('Loss A RECON', as_np(self.recon_loss_A.mean()), self.iters)
+        self.board_writer.add_scalar('Loss B RECON', as_np(self.recon_loss_B.mean()), self.iters)
 
     def _calc_loss(self, generator_A, generator_B, discriminator_A, discriminator_B, A, B, rate):
         generator_A.zero_grad()

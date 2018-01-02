@@ -4,7 +4,7 @@ import torch.nn as nn
 from progressbar import ETA, Bar, Percentage, ProgressBar
 
 from .dataset import shuffle_data
-from .disco_gan_model import DiscoGAN, get_generators, get_discriminators, save_images
+from .disco_gan_model import DiscoGAN, get_generators, get_discriminators
 from .error_bound_calc_functions import calc_mean_gt_error, calc_mean_error_bound
 from .utils import *
 
@@ -41,24 +41,18 @@ class DiscoGANRisk(DiscoGAN):
         torch.save(self.discriminator_A_G2, os.path.join(self.model_path, 'model_dis_A_G2-' + version))
         torch.save(self.discriminator_B_G2, os.path.join(self.model_path, 'model_dis_B_G2-' + version))
 
-    def _save_images(self, A, B):
-        A, B = read_images(A, B, self.args.image_size, self.cuda)
-        version = str(int(self.iters / self.args.image_save_interval))
-        save_images(A, B, self.generator_A, self.generator_B, version, self.result_path_1)
-        save_images(A, B, self.generator_A_G2, self.generator_B_G2, version, self.result_path_2)
-
     def _log_losses(self, A, B):
         super()._log_losses(A, B)
         A, B = read_images(A, B, self.args.image_size, self.cuda, aligned=True)
         loss = nn.L1Loss()
         gt_error_A_G2 = calc_mean_gt_error(B, A, self.generator_A_G2, loss)
         gt_error_B_G2 = calc_mean_gt_error(A, B, self.generator_B_G2, loss)
-        self.writer_1.add_scalar('GT Error A G2', gt_error_A_G2, self.iters)
-        self.writer_1.add_scalar('GT Error B G2', gt_error_B_G2, self.iters)
+        self.board_writer.add_scalar('GT Error A G2', gt_error_A_G2, self.iters)
+        self.board_writer.add_scalar('GT Error B G2', gt_error_B_G2, self.iters)
         error_bound_A = calc_mean_error_bound(B, self.generator_A, self.generator_A_G2, loss)
         error_bound_B = calc_mean_error_bound(A, self.generator_B, self.generator_B_G2, loss)
-        self.writer_1.add_scalar('Bound A', error_bound_A, self.iters)
-        self.writer_1.add_scalar('Bound B', error_bound_B, self.iters)
+        self.board_writer.add_scalar('Bound A', error_bound_A, self.iters)
+        self.board_writer.add_scalar('Bound B', error_bound_B, self.iters)
 
     def _calc_corr_loss(self, A, B):
         AB_1 = self.generator_B(A)
