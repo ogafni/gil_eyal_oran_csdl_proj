@@ -8,25 +8,27 @@ from .utils import to_no_grad_var
 from .dataset import *
 
 
+def _calc_loss(y, y_pred, loss):
+    return loss(to_no_grad_var(y), to_no_grad_var(y_pred)).data[0]
+
+
 def calc_error_bound(samples, G1, G2, loss):
     G1_out = G1(samples)
     G2_out = G2(samples)
-    return [loss(to_no_grad_var(G1_sample), to_no_grad_var(G2_sample)) for G1_sample, G2_sample in zip(G1_out, G2_out)]
+    return [_calc_loss(G1_sample, G2_sample, loss) for G1_sample, G2_sample in zip(G1_out, G2_out)]
 
 
 def calc_mean_error_bound(samples, G1, G2, loss):
-    bounds = calc_error_bound(samples, G1, G2, loss)
-    return np.mean([bound.data[0] for bound in bounds])
+    return np.mean(calc_error_bound(samples, G1, G2, loss))
 
 
 def calc_gt_error(samples, labels, G1, loss):
     G1_out = G1(samples)
-    return [loss(to_no_grad_var(G1_sample), to_no_grad_var(label)) for G1_sample, label in zip(G1_out, labels)]
+    return [_calc_loss(label, G1_sample, loss) for G1_sample, label in zip(G1_out, labels)]
 
 
 def calc_mean_gt_error(samples, labels, G1, loss):
-    errors = calc_gt_error(samples, labels, G1, loss)
-    return np.mean([error.data[0] for error in errors])
+    return np.mean(calc_gt_error(samples, labels, G1, loss))
 
 
 def calc_error_bound_and_gt(samples, labels, G1, G2):
@@ -64,7 +66,7 @@ def samples_order_by_loss(samples, labels, G1, G2, n_batch=64, print_freq=100):
         end = min(start + n_batch, n_samples)
         samples_batch = samples[start: end, :, :, :].cuda()
         labels_batch = labels[start: end, :, :, :].cuda()
-        bounds[start: end], ground_truth_loss[start: end] = calc_error_bound_and_gt(samples_batch, labels_batch, G1,G2)
+        bounds[start: end], ground_truth_loss[start: end] = calc_error_bound_and_gt(samples_batch, labels_batch, G1, G2)
     J_loss_order = bounds.argsort()[::-1]  # sort max-->min
     return J_loss_order, bounds, ground_truth_loss
 
@@ -93,6 +95,7 @@ def samples_order_by_loss_from_filenames(dataset_A, dataset_B, G1, G2, is_cuda=T
         test_A = test_A.cuda(0)
         test_B = test_B.cuda(0)
     return samples_order_by_loss(test_B, test_A, G1, G2, n_batch, print_freq)
+
 
 def reorder_samples_by_loss(J_loss_order, samples):
     """
