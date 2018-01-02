@@ -2,6 +2,7 @@ import math
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
+from progressbar import ProgressBar, Percentage, Bar, ETA
 
 from .utils import to_no_grad_var
 from .dataset import *
@@ -49,23 +50,23 @@ def samples_order_by_loss(samples, labels, G1, G2, n_batch=64, print_freq=100):
     """
     n_samples = len(samples)  # number of samples in the dataset
     print('Number of samples: ', n_samples)
-    J_loss_val = np.zeros(n_samples, dtype=float)  # initalize loss vec
+    bounds = np.zeros(n_samples, dtype=float)  # initalize loss vec
     ground_truth_loss = np.zeros(n_samples, dtype=float)  # initalize ground truth loss vec
     n_iter = math.ceil(n_samples / n_batch)
     print('Number of iterations: ', n_iter)
+    widgets = [Percentage(), Bar(), ETA()]
+    pbar = ProgressBar(maxval=n_iter, widgets=widgets)
+    pbar.start()
 
     for idx in np.arange(n_iter):
+        pbar.update(idx)
         start = idx * n_batch
         end = min(start + n_batch, n_samples)
-        samples_batch = samples[start: end, :, :, :]
-        labels_batch = labels[start: end, :, :, :]
-        J_loss_val[start: end], ground_truth_loss[start: end] = calc_error_bound_and_gt(samples_batch, labels_batch, G1,
-                                                                                        G2)
-        if idx % print_freq == 0:  # printing frequency
-            print('Completed ', idx, ' iterations (', idx * n_batch, 'samples )')
-    print('Done calculating error bound & ground truth for all samples')
-    J_loss_order = J_loss_val.argsort()[::-1]  # sort max-->min
-    return J_loss_order, J_loss_val, ground_truth_loss
+        samples_batch = samples[start: end, :, :, :].cuda()
+        labels_batch = labels[start: end, :, :, :].cuda()
+        bounds[start: end], ground_truth_loss[start: end] = calc_error_bound_and_gt(samples_batch, labels_batch, G1,G2)
+    J_loss_order = bounds.argsort()[::-1]  # sort max-->min
+    return J_loss_order, bounds, ground_truth_loss
 
 
 def samples_order_by_loss_from_filenames(dataset_A, dataset_B, G1, G2, is_cuda=True, n_batch=64, print_freq=100):
