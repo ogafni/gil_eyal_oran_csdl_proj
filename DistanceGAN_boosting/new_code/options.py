@@ -10,8 +10,8 @@ class Options():
                  use_reconst_loss=False, num_layers=4, num_layers_second_gan=4, starting_correlation_rate=1,
                  default_correlation_rate=1, number_of_samples=500, not_all_samples=False, port=8097, test_mode=False,
                  which_epoch_load=3, one_sample_index=0, continue_training=False, indiv_gan_rate=1,fixed_g1=False,
-                 pretrained_g1_path_A='/media/data2/sagieb/DistanceGAN_risk/results/male_female_reg_exps/male_female_models_num_layers_4_second_5/celebA/Male/discogan/Generator_1/',
-                 pretrained_g1_path_B='/media/data2/sagieb/DistanceGAN_risk/results/male_female_reg_exps/male_female_models_num_layers_4_second_5/celebA/Male/discogan/Generator_1/'):
+                 pretrained_g1_path_A=None, pretrained_g1_path_B=None, pretrained_g2_path_A=None, pretrained_g2_path_B=None,
+                 start_from_pretrained_g1=False, start_from_pretrained_g2=False):
         self.cuda = cuda
         self.task_name = task_name
         self.epoch_size = epoch_size
@@ -52,6 +52,10 @@ class Options():
         self.fixed_g1 = fixed_g1
         self.pretrained_g1_path_A = pretrained_g1_path_A
         self.pretrained_g1_path_B = pretrained_g1_path_B
+        self.pretrained_g2_path_A = pretrained_g2_path_A
+        self.pretrained_g2_path_B = pretrained_g2_path_B
+        self.start_from_pretrained_g1 = start_from_pretrained_g1
+        self.start_from_pretrained_g2 = start_from_pretrained_g2
 
     @classmethod
     def from_cmd(cls):
@@ -121,10 +125,13 @@ class CmdOptions(object):
         self.parser.add_argument('--continue_training', action='store_true')
         self.parser.add_argument('--indiv_gan_rate', type=float, default=1)
         self.parser.add_argument('--fixed_g1', action='store_true')
-        self.parser.add_argument('--pretrained_g1_path_A', type=str,
-                                 default='/media/data2/sagieb/DistanceGAN_risk/results/male_female_reg_exps/male_female_models_num_layers_4_second_5/celebA/Male/discogan/Generator_1/')
-        self.parser.add_argument('--pretrained_g1_path_B', type=str,
-                                 default='/media/data2/sagieb/DistanceGAN_risk/results/male_female_reg_exps/male_female_models_num_layers_4_second_5/celebA/Male/discogan/Generator_1/')
+        self.parser.add_argument('--pretrained_g1_path_A', type=str, default=None)
+        self.parser.add_argument('--pretrained_g1_path_B', type=str, default=None)
+        self.parser.add_argument('--pretrained_g2_path_A', type=str, default=None)
+        self.parser.add_argument('--pretrained_g2_path_B', type=str, default=None)
+        self.parser.add_argument('--start_from_pretrained_g1', action='store_true')
+        self.parser.add_argument('--start_from_pretrained_g2', action='store_true')
+        
 
     def get_args(self):
         return self.parser.parse_args()

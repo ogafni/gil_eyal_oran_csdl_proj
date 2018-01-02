@@ -1,8 +1,10 @@
 import math
-import numpy as np
+import torch
 import torch.nn as nn
+from torch.autograd import Variable
 
-from .utils import to_no_grad_var
+from utils import to_no_grad_var
+from dataset import *
 
 
 def calc_error_bound(samples, G1, G2, loss):
@@ -65,6 +67,31 @@ def samples_order_by_loss(samples, labels, G1, G2, n_batch=64, print_freq=100):
     J_loss_order = J_loss_val.argsort()[::-1]  # sort max-->min
     return J_loss_order, J_loss_val, ground_truth_loss
 
+
+def samples_order_by_loss_from_filenames(dataset_A, dataset_B, G1, G2, is_cuda=True, n_batch=64, print_freq=100):
+    """
+    enveloping function for the samples_order_by_loss, receiving list of filenames instead of arrays with images
+    :param dataset_A: file names from dataset A
+    :param dataset_B: file names from dataset B
+    :param G1_0_A:
+    :param G2_0_A:
+    :param G1_0_B:
+    :param G2_0_B:
+    :param options: needed for creating a discogan class with correct task etc. so the internal samples_order_by_loss could work
+    :param n_batch:
+    :param print_freq:
+    :return:
+    """
+
+    test_A = read_images(dataset_A, domain='A')
+    test_B = read_images(dataset_B, domain='B')
+
+    test_A = Variable(torch.FloatTensor(test_A))
+    test_B = Variable(torch.FloatTensor(test_B))
+    if is_cuda:
+        test_A = test_A.cuda(0)
+        test_B = test_B.cuda(0)
+    return samples_order_by_loss(test_B, test_A, G1, G2, n_batch, print_freq)
 
 def reorder_samples_by_loss(J_loss_order, samples):
     """
