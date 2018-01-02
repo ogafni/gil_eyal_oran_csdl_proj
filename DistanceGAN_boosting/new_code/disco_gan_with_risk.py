@@ -5,7 +5,7 @@ from progressbar import ETA, Bar, Percentage, ProgressBar
 
 from .dataset import shuffle_data
 from .disco_gan_model import DiscoGAN, get_generators, get_discriminators
-from .error_bound_calc_functions import calc_mean_gt_error, calc_mean_error_bound
+from .error_bound_calc_functions import calc_mean_gt_error, calc_mean_error_bound, calc_correlation
 from .utils import *
 
 
@@ -85,6 +85,10 @@ class DiscoGANRisk(DiscoGAN):
         error_bound_B = calc_mean_error_bound(A, self.generator_B, self.generator_B_G2, loss)
         self.board_writer.add_scalar('Bound A', error_bound_A, self.iters)
         self.board_writer.add_scalar('Bound B', error_bound_B, self.iters)
+        correlation_A = calc_correlation(B, A, self.generator_A, self.generator_A_G2)
+        correlation_B = calc_correlation(A, B, self.generator_B, self.generator_B_G2)
+        self.board_writer.add_scalar('Correlation A', correlation_A, self.iters)
+        self.board_writer.add_scalar('Correlation B', correlation_B, self.iters)
 
     def _calc_corr_loss(self, A, B):
         AB_1 = self.generator_B(A)

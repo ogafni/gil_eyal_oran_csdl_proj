@@ -1,6 +1,7 @@
 import math
 import torch
 import torch.nn as nn
+from scipy.stats import pearsonr
 from torch.autograd import Variable
 from progressbar import ProgressBar, Percentage, Bar, ETA
 
@@ -37,12 +38,17 @@ def calc_error_bound_and_gt(samples, labels, G1, G2):
     & the ground truth for G1
     """
     loss = nn.L1Loss()
-    correlation_loss_AB_12 = calc_error_bound(samples, G1, G2, loss)
-    ground_truth_loss_AB_G1 = calc_gt_error(samples, labels, G1, loss)
-    return correlation_loss_AB_12, ground_truth_loss_AB_G1
+    bounds = calc_error_bound(samples, G1, G2, loss)
+    errors = calc_gt_error(samples, labels, G1, loss)
+    return bounds, errors
 
 
-def samples_order_by_loss(samples, labels, G1, G2, n_batch=64, print_freq=100):
+def calc_correlation(samples, labels, G1, G2):
+    bounds, errors = calc_error_bound_and_gt(samples, labels, G1, G2)
+    return pearsonr(bounds, errors)[0]
+
+
+def samples_order_by_loss(samples, labels, G1, G2, n_batch=64):
     """
     This function sorts a dataset of samples by the error bound (correlation loss)
     It returns a vector of indices, representing the following:
@@ -71,7 +77,7 @@ def samples_order_by_loss(samples, labels, G1, G2, n_batch=64, print_freq=100):
     return J_loss_order, bounds, ground_truth_loss
 
 
-def samples_order_by_loss_from_filenames(dataset_A, dataset_B, G1, G2, is_cuda=True, n_batch=64, print_freq=100):
+def samples_order_by_loss_from_filenames(dataset_A, dataset_B, G1, G2, is_cuda=True, n_batch=64):
     """
     enveloping function for the samples_order_by_loss, receiving list of filenames instead of arrays with images
     :param dataset_A: file names from dataset A
@@ -94,7 +100,7 @@ def samples_order_by_loss_from_filenames(dataset_A, dataset_B, G1, G2, is_cuda=T
     if is_cuda:
         test_A = test_A.cuda(0)
         test_B = test_B.cuda(0)
-    return samples_order_by_loss(test_B, test_A, G1, G2, n_batch, print_freq)
+    return samples_order_by_loss(test_B, test_A, G1, G2, n_batch)
 
 
 def reorder_samples_by_loss(J_loss_order, samples):
