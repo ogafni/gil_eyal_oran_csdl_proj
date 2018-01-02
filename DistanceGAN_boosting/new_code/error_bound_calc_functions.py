@@ -3,8 +3,8 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 
-from utils import to_no_grad_var
-from dataset import *
+from .utils import to_no_grad_var
+from .dataset import *
 
 
 def calc_error_bound(samples, G1, G2, loss):

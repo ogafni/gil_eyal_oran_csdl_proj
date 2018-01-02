@@ -2,7 +2,7 @@ import torch
 from torch.autograd import Variable
 import numpy as np
 
-from dataset import read_images as read_dataset_images
+from .dataset import read_images as read_dataset_images
 
 
 def to_no_grad_var(var):
