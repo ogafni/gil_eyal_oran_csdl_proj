@@ -61,10 +61,3 @@ def read_images(A, B, image_size, cuda, aligned=False):
 def get_model_l2(model):
     params = [param for _, param in model.named_parameters()]
     return sum([torch.norm(param, p=2) for param in params]) / len(params)
-
-
-def get_batch_data(A, B, batch, batch_size):
-    data_size = min(len(A), len(B))
-    i_start = batch_size * batch
-    i_end = min(i_start + batch_size, data_size)
-    return A[i_start:i_end], B[i_start:i_end]

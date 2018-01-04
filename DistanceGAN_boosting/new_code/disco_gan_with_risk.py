@@ -3,7 +3,7 @@ import os
 import torch.nn as nn
 from progressbar import ETA, Bar, Percentage, ProgressBar
 
-from .dataset import shuffle_data
+from .dataset import get_data_loaders
 from .disco_gan_model import DiscoGAN, get_generators, get_discriminators
 from .error_bound_calc_functions import calc_mean_gt_error, calc_mean_error_bound, calc_correlation
 from .utils import *
@@ -102,23 +102,21 @@ class DiscoGANRisk(DiscoGAN):
         correlation_loss_BA_2 = - self.correlation_criterion(BA_2, to_no_grad_var(BA_1))
         return correlation_loss_AB_2, correlation_loss_BA_2
 
-    def train(self, data_A, data_B, data_A_val, data_B_val):
+    def train(self, data_A, data_B, data_A_val, data_B_val, b_weights=None):
         n_batches = math.ceil((len(data_A)) / self.args.batch_size)
         print('%d batches per epoch' % n_batches)
         self.iters = 0
+        a_dataloader, b_dataloader = get_data_loaders(data_A, data_B, self.args.batch_size, b_weights)
 
         for epoch in range(self.args.epoch_size):
-            A_epoch, B_epoch = shuffle_data(data_A, data_B)
-
             widgets = ['epoch #%d|' % epoch, Percentage(), Bar(), ETA()]
             pbar = ProgressBar(maxval=n_batches, widgets=widgets)
             pbar.start()
 
-            for i in range(n_batches):
+            for i, (A_paths, B_paths) in enumerate(zip(a_dataloader, b_dataloader)):
                 pbar.update(i)
 
                 # read batch data
-                A_paths, B_paths = get_batch_data(A_epoch, B_epoch, i, self.args.batch_size)
                 A, B = read_images(A_paths, B_paths, self.args.image_size, self.cuda)
 
                 # calculate losses

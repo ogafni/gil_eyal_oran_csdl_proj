@@ -1,22 +1,12 @@
 import os
 import cv2
 import numpy as np
+import torch
+from torch.utils.data import Dataset, DataLoader
+from torch.utils.data.sampler import WeightedRandomSampler
 
 dataset_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'datasets'))
 shoe_path = os.path.join(dataset_path, 'edges2shoes')
-
-
-def shuffle_data(da, db):
-    a_idx = list(range(len(da)))
-    np.random.shuffle(a_idx)
-
-    b_idx = list(range(len(db)))
-    np.random.shuffle(b_idx)
-
-    shuffled_da = np.array(da)[np.array(a_idx)]
-    shuffled_db = np.array(db)[np.array(b_idx)]
-
-    return shuffled_da, shuffled_db
 
 
 def read_images(filenames, domain=None, image_size=64, split=256):
@@ -62,3 +52,30 @@ def get_edges2shoes(test=False, number_of_samples=None):
         n_images = len(image_paths)
         mid = round(n_images / 2)
         return [image_paths[:mid], image_paths[mid:]]
+
+
+class DomainAdaptationDataset(Dataset):
+    def __init__(self, files, transform=None):
+        self.files = files
+        self.transform = transform
+        self.dataset_len = len(files)
+
+    def __len__(self):
+        return self.dataset_len
+
+    def __getitem__(self, idx):
+        sample = self.files[idx]
+        if self.transform:
+            sample = self.transform(sample)
+        return sample
+
+
+def get_data_loaders(data_a, data_b, batch_size, b_weights=None):
+    a_dataset = DomainAdaptationDataset(data_a)
+    b_dataset = DomainAdaptationDataset(data_b)
+
+    a_dataloader = DataLoader(a_dataset, batch_size=batch_size, shuffle=True)
+    # Weights should only apply to B
+    sampler = WeightedRandomSampler(b_weights, len(b_weights)) if b_weights else None
+    b_dataloader = DataLoader(b_dataset, batch_size=batch_size, sampler=sampler, shuffle=sampler == None)
+    return a_dataloader, b_dataloader
