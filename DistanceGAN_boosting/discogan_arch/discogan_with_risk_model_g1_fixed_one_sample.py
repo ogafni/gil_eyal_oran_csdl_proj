@@ -13,13 +13,16 @@ from disco_gan_model import DiscoGAN
 from model import *
 
 class Disco_with_riskGAN(DiscoGAN):
-
+    
     def to_no_grad_var(self, var):
         data = self.as_np(var)
         var = Variable(torch.FloatTensor(data), requires_grad=False)
         if self.cuda:
             var = var.cuda(0)
         return var
+
+    def __init__(self, options):
+            self.args = options
 
     def initialize(self):
 
