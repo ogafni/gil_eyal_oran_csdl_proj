@@ -8,7 +8,7 @@ Downloads the following:
 - Facescrub dataset
 """
 
-from __future__ import print_function
+
 import os
 from os.path import join, exists
 import multiprocessing
@@ -146,11 +146,11 @@ def preprocess_facescrub(dirpath):
         pool.join()
 
 
-def download_facescrub((data_dir, genders, names, urls, bboxes)):
+def download_facescrub(xxx_todo_changeme):
     """
         download from urls into folder names using wget
     """
-
+    (data_dir, genders, names, urls, bboxes) = xxx_todo_changeme
     assert(len(names) == len(urls))
     assert(len(names) == len(bboxes))
     # download using external wget

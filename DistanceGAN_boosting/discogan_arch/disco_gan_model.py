@@ -188,10 +188,8 @@ class DiscoGAN(object):
 
         return A, B
 
-    def __init__(self):
-        options = Options()
-        options.initialize()
-        self.args = options.parser.parse_args()
+    def __init__(self, options):
+        self.args = options
 
     def initialize(self):
 
@@ -388,8 +386,8 @@ class DiscoGAN(object):
         cycle_loss_A = self.recon_loss_A
         cycle_loss_B = self.recon_loss_B
 
-        print "---------------------"
-        print "GAN Loss:", self.as_np(gan_loss_A.mean()), self.as_np(gan_loss_B.mean())
+        print("---------------------")
+        print("GAN Loss:", self.as_np(gan_loss_A.mean()), self.as_np(gan_loss_B.mean()))
         #print "CYCLE Loss:", self.as_np(cycle_loss_A.mean()), self.as_np(cycle_loss_B.mean())
 
 
@@ -414,11 +412,11 @@ class DiscoGAN(object):
         l1_reg = l1_reg_sum / len(weights)
         l2_reg = l2_reg_sum / len(weights)
 
-        print "l1_reg:", l1_reg
-        print "l1_reg sum:", l1_reg_sum
-        print "l2_reg:", l2_reg
+        print("l1_reg:", l1_reg)
+        print("l1_reg sum:", l1_reg_sum)
+        print("l2_reg:", l2_reg)
         #print "l2_reg sum:", l2_reg_sum
-        print "l2_reg sum squared then sqrt:", torch.sqrt(l2_reg_sum_squared)
+        print("l2_reg sum squared then sqrt:", torch.sqrt(l2_reg_sum_squared))
 
     def finish_iteration(self):
 
@@ -430,11 +428,11 @@ class DiscoGAN(object):
             self.optim_gen.step()
 
         if self.iters % self.args.log_interval == 0:
-            print "---------------------"
-            print "GEN Loss:", self.as_np(self.gen_loss_A.mean()), self.as_np(self.gen_loss_B.mean())
-            print "Feature Matching Loss:", self.as_np(self.fm_loss_A.mean()), self.as_np(self.fm_loss_B.mean())
-            print "DIS Loss:", self.as_np(self.dis_loss_A.mean()), self.as_np(self.dis_loss_B.mean())
-            print "RECON Loss:", self.as_np(self.recon_loss_A.mean()), self.as_np(self.recon_loss_B.mean())
+            print("---------------------")
+            print("GEN Loss:", self.as_np(self.gen_loss_A.mean()), self.as_np(self.gen_loss_B.mean()))
+            print("Feature Matching Loss:", self.as_np(self.fm_loss_A.mean()), self.as_np(self.fm_loss_B.mean()))
+            print("DIS Loss:", self.as_np(self.dis_loss_A.mean()), self.as_np(self.dis_loss_B.mean()))
+            print("RECON Loss:", self.as_np(self.recon_loss_A.mean()), self.as_np(self.recon_loss_B.mean()))
 
             weights, biases = [], []
             all_params_1 = self.generator_A.named_parameters()
@@ -462,11 +460,11 @@ class DiscoGAN(object):
             l1_reg = l1_reg_sum/len(weights)
             l2_reg = l2_reg_sum/len(weights)
 
-            print "l1_reg:", l1_reg
-            print "l2_reg:", l2_reg
-            print "l1_reg sum:", l1_reg_sum
-            print "l2_reg sum:", l2_reg_sum
-            print "l2_reg sum squared:", l2_reg_sum_squared
+            print("l1_reg:", l1_reg)
+            print("l2_reg:", l2_reg)
+            print("l1_reg sum:", l1_reg_sum)
+            print("l2_reg sum:", l2_reg_sum)
+            print("l2_reg sum squared:", l2_reg_sum_squared)
 
             self.writer_1.add_scalar('l1_reg', self.as_np(l1_reg), self.iters)
             self.writer_1.add_scalar('l2_reg', self.as_np(l2_reg), self.iters)
@@ -515,5 +513,6 @@ class DiscoGAN(object):
                        os.path.join(self.model_path, 'model_dis_B-' + str(self.iters / self.args.model_save_interval)))
 
 if __name__ == "__main__":
-    model = DiscoGAN()
+    options = Options.from_cmd()
+    model = DiscoGAN(options)
     model.run()

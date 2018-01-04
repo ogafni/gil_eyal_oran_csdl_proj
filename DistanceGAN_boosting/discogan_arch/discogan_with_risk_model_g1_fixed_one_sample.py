@@ -6,19 +6,23 @@ import torch.nn as nn
 import torch.optim as optim
 from progressbar import ETA, Bar, Percentage, ProgressBar
 from torch.autograd import Variable
+from discogan_arch_options.options import Options
 
 from dataset import *
 from disco_gan_model import DiscoGAN
 from model import *
 
 class Disco_with_riskGAN(DiscoGAN):
-
+    
     def to_no_grad_var(self, var):
         data = self.as_np(var)
         var = Variable(torch.FloatTensor(data), requires_grad=False)
         if self.cuda:
             var = var.cuda(0)
         return var
+
+    def __init__(self, options):
+            self.args = options
 
     def initialize(self):
 
@@ -357,19 +361,19 @@ class Disco_with_riskGAN(DiscoGAN):
             alligned_correlation_loss_AB_2, alligned_correlation_loss_BA_2,
             alligned_dis_loss_A_1, alligned_dis_loss_B_1, alligned_dis_loss_A_2, alligned_dis_loss_B_2) = self.alligned_losses
 
-            print "---------------------"
-            print "GAN Loss 1:", self.as_np(alligned_gan_loss_A_1.mean()), self.as_np(alligned_gan_loss_B_1.mean())
-            print "DIS Loss 1:", self.as_np(alligned_dis_loss_A_1.mean()), self.as_np(alligned_dis_loss_B_1.mean())
-            print "RECON Loss 1:", self.as_np(alligned_recon_loss_A_1.mean()), self.as_np(alligned_recon_loss_B_1.mean())
-            print "Correlation Loss 1:", self.as_np(alligned_correlation_loss_AB_2.mean()), self.as_np(alligned_correlation_loss_BA_2.mean())
-            print "Ground truth Loss 1:", self.as_np(self.ground_truth_loss_AB_1.mean()), self.as_np(self.ground_truth_loss_BA_1.mean())
+            print("---------------------")
+            print("GAN Loss 1:", self.as_np(alligned_gan_loss_A_1.mean()), self.as_np(alligned_gan_loss_B_1.mean()))
+            print("DIS Loss 1:", self.as_np(alligned_dis_loss_A_1.mean()), self.as_np(alligned_dis_loss_B_1.mean()))
+            print("RECON Loss 1:", self.as_np(alligned_recon_loss_A_1.mean()), self.as_np(alligned_recon_loss_B_1.mean()))
+            print("Correlation Loss 1:", self.as_np(alligned_correlation_loss_AB_2.mean()), self.as_np(alligned_correlation_loss_BA_2.mean()))
+            print("Ground truth Loss 1:", self.as_np(self.ground_truth_loss_AB_1.mean()), self.as_np(self.ground_truth_loss_BA_1.mean()))
 
-            print "---------------------"
-            print "GAN Loss 2:", self.as_np(alligned_gan_loss_A_2.mean()), self.as_np(alligned_gan_loss_B_2.mean())
-            print "DIS Loss 2:", self.as_np(alligned_dis_loss_A_2.mean()), self.as_np(alligned_dis_loss_B_2.mean())
-            print "RECON Loss 2:", self.as_np(alligned_recon_loss_A_1.mean()), self.as_np(alligned_recon_loss_B_2.mean())
-            print "Correlation Loss 2:", self.as_np(alligned_correlation_loss_AB_2.mean()), self.as_np(alligned_correlation_loss_BA_2.mean())
-            print "Ground truth Loss 2:", self.as_np(self.ground_truth_loss_AB_2.mean()), self.as_np(self.ground_truth_loss_BA_2.mean())
+            print("---------------------")
+            print("GAN Loss 2:", self.as_np(alligned_gan_loss_A_2.mean()), self.as_np(alligned_gan_loss_B_2.mean()))
+            print("DIS Loss 2:", self.as_np(alligned_dis_loss_A_2.mean()), self.as_np(alligned_dis_loss_B_2.mean()))
+            print("RECON Loss 2:", self.as_np(alligned_recon_loss_A_1.mean()), self.as_np(alligned_recon_loss_B_2.mean()))
+            print("Correlation Loss 2:", self.as_np(alligned_correlation_loss_AB_2.mean()), self.as_np(alligned_correlation_loss_BA_2.mean()))
+            print("Ground truth Loss 2:", self.as_np(self.ground_truth_loss_AB_2.mean()), self.as_np(self.ground_truth_loss_BA_2.mean()))
 
         if self.iters % self.args.image_save_interval == 0:
             AB_1 = self.generator_B_1(self.test_A)
@@ -453,5 +457,6 @@ class Disco_with_riskGAN(DiscoGAN):
 
 
 if __name__ == "__main__":
-    model = Disco_with_riskGAN()
+    options = Options.from_cmd()
+    model = Disco_with_riskGAN(options)
     model.run()
