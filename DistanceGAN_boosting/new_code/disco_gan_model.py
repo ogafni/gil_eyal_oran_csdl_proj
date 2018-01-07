@@ -57,8 +57,25 @@ class DiscoGAN():
         os.makedirs(self.model_path, exist_ok=True)
 
         lr = self.args.learning_rate
-        self.generator_A, self.generator_B, self.optim_gen = get_generators(self.cuda, self.args.num_layers, lr)
-        self.discriminator_A, self.discriminator_B, self.optim_dis = get_discriminators(self.cuda, lr)
+
+        if self.args.start_from_pretrained_g1:
+            gen_A_path = os.path.join(self.args.pretrained_g1_path_A,
+                                      'model_gen_A_G1-' + str(self.args.which_epoch_load))
+            self.generator_A = torch.load(gen_A_path)
+            gen_B_path = os.path.join(self.args.pretrained_g1_path_B,
+                                      'model_gen_B_G1-' + str(self.args.which_epoch_load))
+            self.generator_B = torch.load(gen_B_path)
+            dis_A_path = os.path.join(self.args.pretrained_g1_path_A,
+                                      'model_dis_A_G1-' + str(self.args.which_epoch_load))
+            self.discriminator_A = torch.load(dis_A_path)
+            dis_B_path = os.path.join(self.args.pretrained_g1_path_B,
+                                      'model_dis_B_G1-' + str(self.args.which_epoch_load))
+            self.discriminator_B = torch.load(dis_B_path)
+            _, _, self.optim_gen = get_generators(self.cuda, self.args.num_layers, lr)
+            _, _, self.optim_dis = get_discriminators(self.cuda, lr)
+        else:
+            self.generator_A, self.generator_B, self.optim_gen = get_generators(self.cuda, self.args.num_layers, lr)
+            self.discriminator_A, self.discriminator_B, self.optim_dis = get_discriminators(self.cuda, lr)
 
         self.recon_criterion = nn.MSELoss()
         self.gan_criterion = nn.BCELoss()
