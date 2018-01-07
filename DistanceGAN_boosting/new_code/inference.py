@@ -31,10 +31,10 @@ def load_model(filename):
 
 def load_models(options):
 
-    generator_A_1 = load_model(os.path.join(options.pretrained_g1_path_A, 'model_gen_A-' + str(options.which_epoch_load)))
-    generator_B_1 = load_model(os.path.join(options.pretrained_g1_path_B, 'model_gen_B-' + str(options.which_epoch_load)))
-    generator_A_2 = load_model(os.path.join(options.pretrained_g2_path_A, 'model_gen_A-' + str(options.which_epoch_load)))
-    generator_B_2 = load_model(os.path.join(options.pretrained_g2_path_B, 'model_gen_B-' + str(options.which_epoch_load)))
+    generator_A_1 = load_model(os.path.join(options.pretrained_g1_path_A, 'model_gen_A_G1-' + str(options.which_epoch_load)))
+    generator_B_1 = load_model(os.path.join(options.pretrained_g1_path_B, 'model_gen_B_G1-' + str(options.which_epoch_load)))
+    generator_A_2 = load_model(os.path.join(options.pretrained_g2_path_A, 'model_gen_A_G2-' + str(options.which_epoch_load)))
+    generator_B_2 = load_model(os.path.join(options.pretrained_g2_path_B, 'model_gen_B_G2-' + str(options.which_epoch_load)))
 
     return generator_A_1, generator_B_1, generator_A_2, generator_B_2
 
