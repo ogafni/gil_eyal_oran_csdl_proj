@@ -95,7 +95,10 @@ class DiscoGANRisk(DiscoGAN):
         BA_1 = self.generator_A(B)
         AB_2 = self.generator_B_G2(A)
         BA_2 = self.generator_A_G2(B)
-
+        if self.args.one_sample_train:
+            one_sample_index = self.args.one_sample_index
+            AB_1, BA_1= AB_1[one_sample_index], BA_1[one_sample_index]
+            AB_2, BA_2= AB_2[one_sample_index], BA_2[one_sample_index]
         # Correlation loss
         # Distance between generator 1 and generator 2's output
         correlation_loss_AB_2 = - self.correlation_criterion(AB_2, to_no_grad_var(AB_1))
@@ -116,8 +119,6 @@ class DiscoGANRisk(DiscoGAN):
 
         one_sample_AB_full = generator_B(one_sample_A)
         one_sample_BA_full = generator_A(one_sample_B)
-        one_sample_AB = one_sample_AB_full[one_sample_index]
-        one_sample_BA = one_sample_BA_full[one_sample_index]
 
         one_sample_ABA = generator_A(one_sample_AB_full)[one_sample_index]
         one_sample_BAB = generator_B(one_sample_BA_full)[one_sample_index]
@@ -143,8 +144,8 @@ class DiscoGANRisk(DiscoGAN):
         # Additional for one-sample mode (A)
         A_dis_real, A_feats_real = discriminator_A(one_sample_A[one_sample_index: one_sample_index + 1])
         A_dis_fake, A_feats_fake = discriminator_A(one_sample_BA_full[one_sample_index: one_sample_index + 1])
-        one_sample_dis_loss_A, one_sample_gen_loss_A = get_gan_loss(A_dis_real, A_dis_fake)
-        one_sample_fm_loss_A = get_fm_loss(A_feats_real, A_feats_fake)
+        one_sample_dis_loss_A, one_sample_gen_loss_A = get_gan_loss(A_dis_real, A_dis_fake, self.gan_criterion, self.cuda)
+        one_sample_fm_loss_A = get_fm_loss(A_feats_real, A_feats_fake, self.feat_criterion)
         gen_loss_A += one_sample_gen_loss_A
         fm_loss_A += one_sample_fm_loss_A
         recon_loss_A += one_sample_recon_loss_A
@@ -152,8 +153,8 @@ class DiscoGANRisk(DiscoGAN):
         # Additional for one-sample mode (A)
         B_dis_real, B_feats_real = discriminator_B(one_sample_B[one_sample_index: one_sample_index + 1])
         B_dis_fake, B_feats_fake = discriminator_B(one_sample_AB_full[one_sample_index: one_sample_index + 1])
-        one_sample_dis_loss_B, one_sample_gen_loss_B = get_gan_loss(B_dis_real, B_dis_fake)
-        one_sample_fm_loss_B = get_fm_loss(B_feats_real, B_feats_fake)
+        one_sample_dis_loss_B, one_sample_gen_loss_B = get_gan_loss(B_dis_real, B_dis_fake, self.gan_criterion, self.cuda)
+        one_sample_fm_loss_B = get_fm_loss(B_feats_real, B_feats_fake, self.feat_criterion)
         gen_loss_B += one_sample_gen_loss_B
         fm_loss_B += one_sample_fm_loss_B
         recon_loss_B += one_sample_recon_loss_B
@@ -202,8 +203,8 @@ class DiscoGANRisk(DiscoGAN):
                     self.dis_loss_A_2, self.dis_loss_B_2, self.gen_loss_A_2, self.gen_loss_B_2, self.recon_loss_A_2, self.recon_loss_B_2 = \
                         self._calc_loss_one(self.generator_A_G2, self.generator_B_G2, self.discriminator_A_G2,
                                             self.discriminator_B_G2, A, B, one_sample_A, one_sample_B, rate)
-                    correlation_loss_AB, correlation_loss_BA = self._calc_corr_loss(
-                        one_sample_A[self.args.one_sample_index], one_sample_B[self.args.one_sample_index])
+                    correlation_loss_AB, correlation_loss_BA = self._calc_corr_loss(one_sample_A, one_sample_B)
+
                 # Calculate G2 for all-samples case
                 else:
                     self.dis_loss_A_2, self.dis_loss_B_2, self.gen_loss_A_2, self.gen_loss_B_2, self.recon_loss_A_2, self.recon_loss_B_2 = \

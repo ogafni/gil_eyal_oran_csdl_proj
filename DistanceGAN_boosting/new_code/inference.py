@@ -1,6 +1,6 @@
-from options import Options
-from dataset import *
-from error_bound_calc_functions import *
+from new_code.options import Options
+from new_code.dataset import *
+from new_code.error_bound_calc_functions import *
 import numpy as np
 import torch
 import os
@@ -30,7 +30,6 @@ def load_model(filename):
     return model
 
 def load_models(options):
-
     generator_A_1 = load_model(os.path.join(options.pretrained_g1_path_A, 'model_gen_A_G1-' + str(options.which_epoch_load)))
     generator_B_1 = load_model(os.path.join(options.pretrained_g1_path_B, 'model_gen_B_G1-' + str(options.which_epoch_load)))
     generator_A_2 = load_model(os.path.join(options.pretrained_g2_path_A, 'model_gen_A_G2-' + str(options.which_epoch_load)))
@@ -81,16 +80,19 @@ def run_test_with_boosting(options1, options2, mode='thresh', thresh=None):
 
     #calculate the average error with the boosting. taking the ground truth loss of first iteration only on idx's of first round,
     #and adding the ground truth lost from the second iteration on the second iteration idx's
-    boosting_ground_truth_loss = np.average(np.concatenate((groud_truth_loss[first_round_idx],groud_truth_loss2[second_round_idx])))
-
+    boosting_ground_truth_loss = np.concatenate((groud_truth_loss[first_round_idx],groud_truth_loss2[second_round_idx]))
+    mean_boosting_ground_truth_loss = np.average(boosting_ground_truth_loss)
+    
+    J_loss_boost =  np.concatenate((J_loss_val[first_round_idx],J_loss_val2[second_round_idx]))
+    
     #hopefully the boosting loss will be smaller than the original loss
-    print("Original Loss: {} Boosting Loss: {}".format(original_ground_truth_loss, boosting_ground_truth_loss))
-
+    print("Original Loss: {} Boosting Loss: {}".format(original_ground_truth_loss, mean_boosting_ground_truth_loss))
+    return groud_truth_loss, boosting_ground_truth_loss, groud_truth_loss2, J_loss_val, J_loss_boost, J_loss_val2, J_loss_order, J_loss_order2
 
 
 if __name__ == "__main__":
-    run_test_with_boosting(options1, options2, mode = 'ranking')
-
+    gt_loss_g0, gt_loss_boosting, gt_loss_g1, error_bound_g0, error_bound_boosting, error_bound_g1, error_bound_order_g0, error_bound_order_g1 = run_test_with_boosting(options1, options2, mode = 'ranking')
+    
 
 
 

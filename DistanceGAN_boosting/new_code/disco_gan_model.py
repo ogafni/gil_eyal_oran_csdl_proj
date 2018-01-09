@@ -85,10 +85,10 @@ class DiscoGAN():
 
     def _save_model(self):
         version = str(int(self.iters / self.args.model_save_interval))
-        torch.save(self.generator_A, os.path.join(self.model_path, 'model_gen_A-' + version))
-        torch.save(self.generator_B, os.path.join(self.model_path, 'model_gen_B-' + version))
-        torch.save(self.discriminator_A, os.path.join(self.model_path, 'model_dis_A-' + version))
-        torch.save(self.discriminator_B, os.path.join(self.model_path, 'model_dis_B-' + version))
+        torch.save(self.generator_A, os.path.join(self.model_path, 'model_gen_A_G1-' + version))
+        torch.save(self.generator_B, os.path.join(self.model_path, 'model_gen_B_G1-' + version))
+        torch.save(self.discriminator_A, os.path.join(self.model_path, 'model_dis_A_G1-' + version))
+        torch.save(self.discriminator_B, os.path.join(self.model_path, 'model_dis_B_G1-' + version))
 
     def _save_images(self, A, B):
         A, B = read_images(A, B, self.args.image_size, self.cuda)

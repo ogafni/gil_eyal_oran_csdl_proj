@@ -117,4 +117,6 @@ def reorder_samples_by_loss(J_loss_order, samples):
             S_A_reordered = S_A_reordered.cuda(0)
             S_B_reordered = S_B_reordered.cuda(0)
     """
-    return samples[J_loss_order.tolist()]
+    #return samples[J_loss_order.tolist()]
+    return [y for x,y in sorted(zip(J_loss_order,samples))]
+
