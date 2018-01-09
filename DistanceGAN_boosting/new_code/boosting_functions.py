@@ -138,50 +138,50 @@ if __name__ == "__main__":
     gt_loss_g0, gt_loss_boosting, gt_loss_g1, error_bound_g0, error_bound_boosting, error_bound_g1,\
         error_bound_order_g0, error_bound_order_g1 = run_test_with_boosting(options_0, options_1, mode='ranking')
 
-    # Run only with G2 training
-    pretrained_g10_path, pretrained_g20_path = './saved_models/discogan_shoes2edges/g1_only', \
-                                               './saved_models/discogan_shoes2edges/g2_one-sample_g1-fixed'
-    data_a, data_b = dataset.get_edges2shoes()
-    data_len = min(len(data_a), len(data_b))
-    data_a, data_b = data_a[:data_len], data_b[:data_len]
-
-    data_A_val, data_B_val = dataset.get_edges2shoes(test=True)
-    J_loss_order_0, J_loss_val_0, ground_truth_loss_0 = initial_boosting_calc(pretrained_g10_path, pretrained_g20_path,
-                                                                              data_a=data_a, data_b=data_b)
-    data_a_reorder_0, data_b_reorder_0 = return_partial_ordered(data_a, data_b, J_loss_order_0, keep_portion=0.5)
-    over_train = int(round(1 / (len(data_a_reorder_0) / len(data_a))))
-    g1_1_path, g2_1_path = boosting_train_only_g2_train(pretrained_g10_path, pretrained_g20_path, data_a_reorder_0,
-                                                        data_b_reorder_0,
-                                                        data_A_val, data_B_val, phase=2, over_train=over_train,
-                                                        boosting_phases=1,
-                                                        b_weights=None)
-    options_0, options_1 = define_options_for_inference(pretrained_g10_path, pretrained_g20_path,
-                                                        pretrained_g10_path + '_boosting1_g1',
-                                                        pretrained_g20_path + '_boosting1_g2', phase=2, over_train=2)
-
-    gt_loss_g0, gt_loss_boosting, gt_loss_g1, error_bound_g0, error_bound_boosting, error_bound_g1,\
-        error_bound_order_g0, error_bound_order_g1 = run_test_with_boosting(options_0, options_1, mode='ranking')
-
-    # Run with no training
-
-    pretrained_g10_path, pretrained_g20_path = './saved_models/discogan_shoes2edges/g1_only', \
-                                               './saved_models/discogan_shoes2edges/g2_one-sample_g1-fixed'
-    data_a, data_b = dataset.get_edges2shoes()
-    data_len = min(len(data_a), len(data_b))
-    data_a, data_b = data_a[:data_len], data_b[:data_len]
-
-    data_A_val, data_B_val = dataset.get_edges2shoes(test=True)
-    J_loss_order_0, J_loss_val_0, ground_truth_loss_0 = initial_boosting_calc(pretrained_g10_path, pretrained_g20_path,
-                                                                              data_a=data_a, data_b=data_b)
-    data_a_reorder_0, data_b_reorder_0 = return_partial_ordered(data_a, data_b, J_loss_order_0, keep_portion=0.5)
-    over_train = int(round(1 / (len(data_a_reorder_0) / len(data_a))))
-    g1_1_path, g2_1_path = boosting_no_train(pretrained_g10_path, pretrained_g20_path, data_a_reorder_0,
-                                             data_b_reorder_0,
-                                             data_A_val, data_B_val, phase=2, over_train=over_train, boosting_phases=1,
-                                             b_weights=None)
-    options_0, options_1 = define_options_for_inference(pretrained_g10_path, pretrained_g20_path,
-                                                        pretrained_g10_path + '_boosting1_g1',
-                                                        pretrained_g20_path + '_boosting1_g2', phase=2, over_train=2)
-
-    gt_loss_g0, gt_loss_boosting, gt_loss_g1, error_bound_g0, error_bound_boosting, error_bound_g1,\
-        error_bound_order_g0, error_bound_order_g1 = run_test_with_boosting(options_0, options_1, mode='ranking')
+    # # Run only with G2 training
+    # pretrained_g10_path, pretrained_g20_path = './saved_models/discogan_shoes2edges/g1_only', \
+    #                                            './saved_models/discogan_shoes2edges/g2_one-sample_g1-fixed'
+    # data_a, data_b = dataset.get_edges2shoes()
+    # data_len = min(len(data_a), len(data_b))
+    # data_a, data_b = data_a[:data_len], data_b[:data_len]
+    #
+    # data_A_val, data_B_val = dataset.get_edges2shoes(test=True)
+    # J_loss_order_0, J_loss_val_0, ground_truth_loss_0 = initial_boosting_calc(pretrained_g10_path, pretrained_g20_path,
+    #                                                                           data_a=data_a, data_b=data_b)
+    # data_a_reorder_0, data_b_reorder_0 = return_partial_ordered(data_a, data_b, J_loss_order_0, keep_portion=0.5)
+    # over_train = int(round(1 / (len(data_a_reorder_0) / len(data_a))))
+    # g1_1_path, g2_1_path = boosting_train_only_g2_train(pretrained_g10_path, pretrained_g20_path, data_a_reorder_0,
+    #                                                     data_b_reorder_0,
+    #                                                     data_A_val, data_B_val, phase=2, over_train=over_train,
+    #                                                     boosting_phases=1,
+    #                                                     b_weights=None)
+    # options_0, options_1 = define_options_for_inference(pretrained_g10_path, pretrained_g20_path,
+    #                                                     pretrained_g10_path + '_boosting1_g1',
+    #                                                     pretrained_g20_path + '_boosting1_g2', phase=2, over_train=2)
+    #
+    # gt_loss_g0, gt_loss_boosting, gt_loss_g1, error_bound_g0, error_bound_boosting, error_bound_g1,\
+    #     error_bound_order_g0, error_bound_order_g1 = run_test_with_boosting(options_0, options_1, mode='ranking')
+    #
+    # # Run with no training
+    #
+    # pretrained_g10_path, pretrained_g20_path = './saved_models/discogan_shoes2edges/g1_only', \
+    #                                            './saved_models/discogan_shoes2edges/g2_one-sample_g1-fixed'
+    # data_a, data_b = dataset.get_edges2shoes()
+    # data_len = min(len(data_a), len(data_b))
+    # data_a, data_b = data_a[:data_len], data_b[:data_len]
+    #
+    # data_A_val, data_B_val = dataset.get_edges2shoes(test=True)
+    # J_loss_order_0, J_loss_val_0, ground_truth_loss_0 = initial_boosting_calc(pretrained_g10_path, pretrained_g20_path,
+    #                                                                           data_a=data_a, data_b=data_b)
+    # data_a_reorder_0, data_b_reorder_0 = return_partial_ordered(data_a, data_b, J_loss_order_0, keep_portion=0.5)
+    # over_train = int(round(1 / (len(data_a_reorder_0) / len(data_a))))
+    # g1_1_path, g2_1_path = boosting_no_train(pretrained_g10_path, pretrained_g20_path, data_a_reorder_0,
+    #                                          data_b_reorder_0,
+    #                                          data_A_val, data_B_val, phase=2, over_train=over_train, boosting_phases=1,
+    #                                          b_weights=None)
+    # options_0, options_1 = define_options_for_inference(pretrained_g10_path, pretrained_g20_path,
+    #                                                     pretrained_g10_path + '_boosting1_g1',
+    #                                                     pretrained_g20_path + '_boosting1_g2', phase=2, over_train=2)
+    #
+    # gt_loss_g0, gt_loss_boosting, gt_loss_g1, error_bound_g0, error_bound_boosting, error_bound_g1,\
+    #     error_bound_order_g0, error_bound_order_g1 = run_test_with_boosting(options_0, options_1, mode='ranking')
