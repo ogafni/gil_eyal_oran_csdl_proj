@@ -7,6 +7,7 @@ from torch.utils.data.sampler import WeightedRandomSampler
 
 dataset_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'datasets'))
 shoe_path = os.path.join(dataset_path, 'edges2shoes')
+handbag_path = os.path.join(dataset_path, 'edges2handbags')
 
 
 def read_images(filenames, domain=None, image_size=64, split=256):
@@ -36,10 +37,15 @@ def read_images(filenames, domain=None, image_size=64, split=256):
 
 
 def get_edges2shoes(test=False, number_of_samples=None):
-    if test:
-        item_path = os.path.join(shoe_path, 'val')
-    else:
-        item_path = os.path.join(shoe_path, 'train')
+    return _get_data(shoe_path, test, number_of_samples)
+
+
+def get_edges2handbags(test=False, number_of_samples=None):
+    return _get_data(handbag_path, test, number_of_samples)
+
+
+def _get_data(item_path, test=False, number_of_samples=None):
+    item_path = os.path.join(item_path, 'val' if test else 'train')
 
     image_paths = [os.path.join(item_path, x) for x in os.listdir(item_path)]
 
