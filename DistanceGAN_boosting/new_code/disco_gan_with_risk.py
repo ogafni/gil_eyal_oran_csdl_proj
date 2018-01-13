@@ -17,61 +17,49 @@ class DiscoGANRisk(DiscoGAN):
         self.result_path_2 = os.path.join(self.result_path, 'G2')
         os.makedirs(self.result_path_1, exist_ok=True)
         os.makedirs(self.result_path_2, exist_ok=True)
+        os.makedirs(os.path.join(self.model_path, 'G2'), exist_ok=True)
 
         lr = self.args.learning_rate
 
-        if self.args.start_from_pretrained_g1:
-            gen_A_path = os.path.join(self.args.pretrained_g1_path_A,
-                                      'model_gen_A_G1-' + str(self.args.which_epoch_load))
-            self.generator_A = torch.load(gen_A_path)
-            gen_B_path = os.path.join(self.args.pretrained_g1_path_B,
-                                      'model_gen_B_G1-' + str(self.args.which_epoch_load))
-            self.generator_B = torch.load(gen_B_path)
-            dis_A_path = os.path.join(self.args.pretrained_g1_path_A,
-                                      'model_dis_A_G1-' + str(self.args.which_epoch_load))
-            self.discriminator_A = torch.load(dis_A_path)
-            dis_B_path = os.path.join(self.args.pretrained_g1_path_B,
-                                      'model_dis_B_G1-' + str(self.args.which_epoch_load))
-            self.discriminator_B = torch.load(dis_B_path)
-            _, _, self.optim_gen = get_generators(self.cuda, self.args.num_layers, lr)
-            _, _, self.optim_dis = get_discriminators(self.cuda, lr)
-        else:
-            self.generator_A, self.generator_B, self.optim_gen = get_generators(self.cuda, self.args.num_layers, lr)
-            self.discriminator_A, self.discriminator_B, self.optim_dis = get_discriminators(self.cuda, lr)
+        self.last_exist_model_g2 = self.check_all_saved_models(os.path.join(self.model_path, 'G2'), g_num=2)
+        if self.args.is_auto_detect_training_version:
+            self.args.which_epoch_load = self.last_exist_model_g2
 
-        if self.args.start_from_pretrained_g2:
-            gen_A_path = os.path.join(self.args.pretrained_g2_path_A,
+        if self.args.start_from_pretrained_g2 and (not self.args.is_auto_detect_training_version or (
+            self.args.is_auto_detect_training_version and self.last_exist_model_g2)):
+            gen_A_path = os.path.join(self.model_path, 'G2',
                                       'model_gen_A_G2-' + str(self.args.which_epoch_load))
-            self.generator_A_G2 = torch.load(gen_A_path)
-            gen_B_path = os.path.join(self.args.pretrained_g2_path_B,
+            gen_B_path = os.path.join(self.model_path, 'G2',
                                       'model_gen_B_G2-' + str(self.args.which_epoch_load))
-            self.generator_B_G2 = torch.load(gen_B_path)
-            dis_A_path = os.path.join(self.args.pretrained_g2_path_A,
+            dis_A_path = os.path.join(self.model_path, 'G2',
                                       'model_dis_A_G2-' + str(self.args.which_epoch_load))
-            self.discriminator_A_G2 = torch.load(dis_A_path)
-            dis_B_path = os.path.join(self.args.pretrained_g2_path_B,
+            dis_B_path = os.path.join(self.model_path, 'G2',
                                       'model_dis_B_G2-' + str(self.args.which_epoch_load))
-            self.discriminator_B_G2 = torch.load(dis_B_path)
-            _, _, self.optim_gen_G2 = get_generators(self.cuda, self.args.num_layers, lr)
-            _, _, self.optim_dis_G2 = get_discriminators(self.cuda, lr)
+            self.generator_A_G2, self.generator_B_G2, self.optim_gen_G2 = get_generators(self.cuda, self.args.num_layers, lr,
+                                                                                gen_A_path, gen_B_path)
+            self.discriminator_A_G2, self.discriminator_B_G2, self.optim_dis_G2 = get_discriminators(self.cuda, lr, dis_A_path,
+                                                                                            dis_B_path)
         else:
             self.generator_A_G2, self.generator_B_G2, self.optim_gen_G2 = get_generators(self.cuda,
                                                                                          self.args.num_layers, lr)
             self.discriminator_A_G2, self.discriminator_B_G2, self.optim_dis_G2 = get_discriminators(self.cuda, lr)
 
+
         self.correlation_criterion = nn.L1Loss()
 
     def _save_model(self):
         version = str(int(self.iters / self.args.model_save_interval))
-        torch.save(self.generator_A, os.path.join(self.model_path, 'model_gen_A_G1-' + version))
-        torch.save(self.generator_B, os.path.join(self.model_path, 'model_gen_B_G1-' + version))
-        torch.save(self.discriminator_A, os.path.join(self.model_path, 'model_dis_A_G1-' + version))
-        torch.save(self.discriminator_B, os.path.join(self.model_path, 'model_dis_B_G1-' + version))
-        torch.save(self.generator_A_G2, os.path.join(self.model_path, 'model_gen_A_G2-' + version))
-        torch.save(self.generator_B_G2, os.path.join(self.model_path, 'model_gen_B_G2-' + version))
-        torch.save(self.discriminator_A_G2, os.path.join(self.model_path, 'model_dis_A_G2-' + version))
-        torch.save(self.discriminator_B_G2, os.path.join(self.model_path, 'model_dis_B_G2-' + version))
-        print('Models checkpoint saved at {0}, version {1}'.format(self.model_path, version))
+        torch.save(self.generator_A, os.path.join(self.model_path,'G1', 'model_gen_A_G1-' + version))
+        torch.save(self.generator_B, os.path.join(self.model_path,'G1', 'model_gen_B_G1-' + version))
+        torch.save(self.discriminator_A, os.path.join(self.model_path,'G1', 'model_dis_A_G1-' + version))
+        torch.save(self.discriminator_B, os.path.join(self.model_path,'G1', 'model_dis_B_G1-' + version))
+        torch.save(self.generator_A_G2, os.path.join(self.model_path,'G2', 'model_gen_A_G2-' + version))
+        torch.save(self.generator_B_G2, os.path.join(self.model_path,'G2', 'model_gen_B_G2-' + version))
+        torch.save(self.discriminator_A_G2, os.path.join(self.model_path,'G2', 'model_dis_A_G2-' + version))
+        torch.save(self.discriminator_B_G2, os.path.join(self.model_path,'G2', 'model_dis_B_G2-' + version))
+        print('Models checkpoint saved at {0}, version {1}'.format(self.model_path,'G1', version))
+        if version == '3':
+            self.is_keep_training = False
 
     def _log_losses(self, A, B):
         super()._log_losses(A, B)
@@ -166,6 +154,10 @@ class DiscoGANRisk(DiscoGAN):
         return dis_loss_A, dis_loss_B, gen_loss_A_total, gen_loss_B_total, recon_loss_A, recon_loss_B
 
     def train(self, data_A, data_B, data_A_val, data_B_val, b_weights=None):
+
+        if self.args.is_auto_detect_training_version and self.last_exist_model_g2 == 3:
+            return
+
         n_batches = math.ceil((len(data_A)) / self.args.batch_size)
         print('%d batches per epoch' % n_batches)
         self.iters = 0
@@ -236,6 +228,14 @@ class DiscoGANRisk(DiscoGAN):
                     self.optim_gen_G2.step()
 
                 # log
-                self._log_state(A_paths, B_paths, data_A_val, data_B_val)
 
                 self.iters += 1
+
+                self._log_state(A_paths, B_paths, data_A_val, data_B_val)
+
+
+                if not self.is_keep_training:
+                    break
+
+            if not self.is_keep_training:
+                break

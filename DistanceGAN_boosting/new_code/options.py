@@ -10,8 +10,7 @@ class Options():
                  use_reconst_loss=False, num_layers=4, num_layers_second_gan=4, starting_correlation_rate=1,
                  default_correlation_rate=1, number_of_samples=500, not_all_samples=False, port=8097, test_mode=False,
                  which_epoch_load=3, one_sample_index=0, continue_training=False, indiv_gan_rate=1,fixed_g1=False,
-                 pretrained_g1_path_A=None, pretrained_g1_path_B=None, pretrained_g2_path_A=None, pretrained_g2_path_B=None,
-                 start_from_pretrained_g1=False, start_from_pretrained_g2=False, one_sample_train=False):
+                 start_from_pretrained_g1=False, start_from_pretrained_g2=False, one_sample_train=False, is_auto_detect_training_version=True):
         self.cuda = cuda
         self.task_name = task_name
         self.dataset = dataset
@@ -51,13 +50,10 @@ class Options():
         self.continue_training = continue_training
         self.indiv_gan_rate = indiv_gan_rate
         self.fixed_g1 = fixed_g1
-        self.pretrained_g1_path_A = pretrained_g1_path_A
-        self.pretrained_g1_path_B = pretrained_g1_path_B
-        self.pretrained_g2_path_A = pretrained_g2_path_A
-        self.pretrained_g2_path_B = pretrained_g2_path_B
         self.start_from_pretrained_g1 = start_from_pretrained_g1
         self.start_from_pretrained_g2 = start_from_pretrained_g2
         self.one_sample_train = one_sample_train
+        self.is_auto_detect_training_version = is_auto_detect_training_version
 
     @classmethod
     def from_cmd(cls):
