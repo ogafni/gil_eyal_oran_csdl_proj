@@ -49,8 +49,8 @@ class DiscoGAN():
         self.args = options
         self.cuda = self.args.cuda == 'true'
 
-        self.result_path = self.args.result_path
-        self.model_path = self.args.model_path
+        self.result_path = os.path.join(self.args.result_path, self.args.task_name, self.args.dataset)
+        self.model_path = os.path.join(self.args.model_path, self.args.task_name, self.args.dataset)
         self.board_writer = SummaryWriter(os.path.join(self.result_path, "log"))
 
         os.makedirs(self.result_path, exist_ok=True)

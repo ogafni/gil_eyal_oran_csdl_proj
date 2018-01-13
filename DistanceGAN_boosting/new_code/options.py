@@ -2,7 +2,7 @@ import argparse
 
 
 class Options():
-    def __init__(self, cuda='true', task_name='facescrub', epoch_size=5000, batch_size=64, learning_rate=0.0002,
+    def __init__(self, cuda='true', task_name='task', dataset='edges2shoes', epoch_size=5000, batch_size=64, learning_rate=0.0002,
                  model_arch='distancegan', image_size=64, gan_curriculum=10000, starting_rate=0.01, default_rate=0.5,
                  style_A=None, style_B=None, constraint=None, constraint_type=None, n_test=200, update_interval=3,
                  log_interval=50, image_save_interval=1000, model_save_interval=10000, result_path='./results/',
@@ -14,6 +14,7 @@ class Options():
                  start_from_pretrained_g1=False, start_from_pretrained_g2=False, one_sample_train=False):
         self.cuda = cuda
         self.task_name = task_name
+        self.dataset = dataset
         self.epoch_size = epoch_size
         self.batch_size = batch_size
         self.learning_rate = learning_rate
@@ -70,7 +71,8 @@ class CmdOptions(object):
     def __init__(self):
         self.parser = argparse.ArgumentParser(description='PyTorch implementation of DistanceGAN based on DiscoGAN')
         self.parser.add_argument('--cuda', type=str, default='true', help='Set cuda usage')
-        self.parser.add_argument('--task_name', type=str, default='facescrub', help='Set data name')
+        self.parser.add_argument('--task_name', type=str, default='task', help='Set the task name')
+        self.parser.add_argument('--dataset', type=str, default='edges2shoes', help='Set the dataset')
         self.parser.add_argument('--epoch_size', type=int, default=5000, help='Set epoch size')
         self.parser.add_argument('--batch_size', type=int, default=64, help='Set batch size')
         self.parser.add_argument('--learning_rate', type=float, default=0.0002, help='Set learning rate for optimizer')
