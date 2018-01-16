@@ -2,8 +2,8 @@ import argparse
 
 
 class Options():
-    def __init__(self, cuda='true', task_name='task', dataset='edges2shoes', epoch_size=5000, batch_size=64, learning_rate=0.0002,
-                 model_arch='distancegan', image_size=64, gan_curriculum=10000, starting_rate=0.01, default_rate=0.5,
+    def __init__(self, cuda='true', task_name='task', dataset='edges2shoes', epoch_size=78, batch_size=64, learning_rate=0.0002,
+                 model_arch='discogan', image_size=64, gan_curriculum=10000, starting_rate=0.01, default_rate=0.5,
                  style_A=None, style_B=None, constraint=None, constraint_type=None, n_test=200, update_interval=3,
                  log_interval=50, image_save_interval=1000, model_save_interval=10000, result_path='./results/',
                  model_path='./models/', use_self_distance=False, unnormalized_distances=False, max_items=300,
