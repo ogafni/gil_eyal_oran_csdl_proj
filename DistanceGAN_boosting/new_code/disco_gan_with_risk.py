@@ -25,8 +25,8 @@ class DiscoGANRisk(DiscoGAN):
         if self.args.is_auto_detect_training_version:
             self.args.which_epoch_load = self.last_exist_model_g2
 
-        if self.args.start_from_pretrained_g2 and (not self.args.is_auto_detect_training_version or (
-            self.args.is_auto_detect_training_version and self.last_exist_model_g2)):
+        if self.args.start_from_pretrained_g2 or (
+            self.args.is_auto_detect_training_version and self.last_exist_model_g2):
             gen_A_path = os.path.join(self.model_path, 'G2',
                                       'model_gen_A_G2-' + str(self.args.which_epoch_load))
             gen_B_path = os.path.join(self.model_path, 'G2',
@@ -160,7 +160,10 @@ class DiscoGANRisk(DiscoGAN):
 
         n_batches = math.ceil((len(data_A)) / self.args.batch_size)
         print('%d batches per epoch' % n_batches)
-        self.iters = 0
+        if self.args.is_auto_detect_training_version:
+            self.iters = self.last_exist_model_g2*self.args.model_save_interval
+        else:
+            self.iters = 0
         a_dataloader, b_dataloader = get_data_loaders(data_A, data_B, self.args.batch_size, b_weights)
 
         if self.args.one_sample_train:

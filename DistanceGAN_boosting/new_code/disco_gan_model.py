@@ -22,14 +22,19 @@ def get_xnators(Xnator_A,Xnator_B, cuda, learning_rate):
     return Xnator_A, Xnator_B, optim_dis
 
 
+def load_and_print(path):
+    print('Loading {}'.format(path))
+    return torch.load(path)
+
+
 def get_generators(cuda, num_layers, learning_rate, gen_A_path = None, gen_B_path = None):
     if gen_A_path is not None:
-        generator_A = torch.load(gen_A_path)
+        generator_A = load_and_print(gen_A_path)
     else:
         generator_A = Generator(num_layers=num_layers)
 
     if gen_B_path is not None:
-        generator_B = torch.load(gen_B_path)
+        generator_B = load_and_print(gen_B_path)
     else:
         generator_B = Generator(num_layers=num_layers)
 
@@ -38,12 +43,12 @@ def get_generators(cuda, num_layers, learning_rate, gen_A_path = None, gen_B_pat
 
 def get_discriminators(cuda, learning_rate, dis_A_path = None, dis_B_path = None):
     if dis_A_path is not None:
-        discriminator_A = torch.load(dis_A_path)
+        discriminator_A = load_and_print(dis_A_path)
     else:
         discriminator_A = Discriminator()
 
     if dis_B_path is not None:
-        discriminator_B = torch.load(dis_B_path)
+        discriminator_B = load_and_print(dis_B_path)
     else:
         discriminator_B = Discriminator()
 
@@ -79,7 +84,7 @@ class DiscoGAN():
         if self.args.is_auto_detect_training_version:
             self.args.which_epoch_load = self.last_exist_model_g1
 
-        if self.args.start_from_pretrained_g1 and (not self.args.is_auto_detect_training_version or (self.args.is_auto_detect_training_version and self.last_exist_model_g1)):
+        if self.args.start_from_pretrained_g1 or (self.args.is_auto_detect_training_version and self.last_exist_model_g1):
             gen_A_path = os.path.join(self.model_path,'G1',
                                       'model_gen_A_G1-' + str(self.args.which_epoch_load))
             gen_B_path = os.path.join(self.model_path,'G1',
@@ -209,7 +214,12 @@ class DiscoGAN():
 
         n_batches = math.ceil(len(data_A) / self.args.batch_size)
         print('%d batches per epoch' % n_batches)
-        self.iters = 0
+        if self.args.is_auto_detect_training_version:
+            self.iters = self.last_exist_model_g1*self.args.model_save_interval
+        else:
+            self.iters = 0
+
+
         a_dataloader, b_dataloader = get_data_loaders(data_A, data_B, self.args.batch_size, b_weights)
 
         for epoch in range(self.args.epoch_size):
