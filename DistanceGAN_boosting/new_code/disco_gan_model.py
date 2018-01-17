@@ -91,7 +91,7 @@ class DiscoGAN():
         torch.save(self.discriminator_B, os.path.join(self.model_path, 'model_dis_B_G1-' + version))
 
     def _save_images(self, A, B):
-        A, B = read_images(A, B, self.args.image_size, self.cuda)
+        A, B = read_images(A, B, self.args.image_size, self.cuda, self.args.dataset)
         version = str(int(self.iters / self.args.image_save_interval))
         if self.first_image_write:
             save_images_list(A, 'A', version, self.board_writer)
@@ -105,7 +105,7 @@ class DiscoGAN():
         save_images_list(BA, 'BA', version, self.board_writer)
 
     def _log_losses(self, A, B):
-        A, B = read_images(A, B, self.args.image_size, self.cuda, aligned=True)
+        A, B = read_images(A, B, self.args.image_size, self.cuda, self.args.dataset, aligned=True)
         loss = nn.L1Loss()
         gt_error_A = calc_mean_gt_error(B, A, self.generator_A, loss)
         gt_error_B = calc_mean_gt_error(A, B, self.generator_B, loss)
@@ -180,7 +180,7 @@ class DiscoGAN():
                 pbar.update(i)
 
                 # read batch data
-                A, B = read_images(A_paths, B_paths, self.args.image_size, self.cuda)
+                A, B = read_images(A_paths, B_paths, self.args.image_size, self.cuda, self.args.dataset)
 
                 # calculate losses
                 if self.iters < self.args.gan_curriculum:
