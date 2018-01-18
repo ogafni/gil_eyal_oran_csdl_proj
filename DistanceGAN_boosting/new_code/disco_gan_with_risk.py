@@ -172,7 +172,7 @@ class DiscoGANRisk(DiscoGAN):
         a_dataloader, b_dataloader = get_data_loaders(data_A, data_B, self.args.batch_size, b_weights)
 
         if self.args.one_sample_train:
-            one_sample_A, one_sample_B = read_images(data_A_val, data_A_val, self.args.image_size, self.cuda)
+            one_sample_A, one_sample_B = read_images(data_A_val[:100], data_A_val[:100], self.args.image_size, self.cuda)
 
         for epoch in range(self.args.epoch_size):
 
