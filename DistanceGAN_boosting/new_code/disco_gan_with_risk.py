@@ -63,7 +63,7 @@ class DiscoGANRisk(DiscoGAN):
 
     def _log_losses(self, A, B):
         super()._log_losses(A, B)
-        A, B = read_images(A, B, self.args.image_size, self.cuda, aligned=True)
+        A, B = read_images(A, B, self.args.image_size, self.cuda, self.args.dataset, aligned=True)
         loss = nn.L1Loss()
         gt_error_A_G2 = calc_mean_gt_error(B, A, self.generator_A_G2, loss)
         gt_error_B_G2 = calc_mean_gt_error(A, B, self.generator_B_G2, loss)
@@ -167,7 +167,7 @@ class DiscoGANRisk(DiscoGAN):
         a_dataloader, b_dataloader = get_data_loaders(data_A, data_B, self.args.batch_size, b_weights)
 
         if self.args.one_sample_train:
-            one_sample_A, one_sample_B = read_images(data_A_val, data_A_val, self.args.image_size, self.cuda)
+            one_sample_A, one_sample_B = read_images(data_A_val, data_A_val, self.args.image_size, self.cuda, self.args.dataset)
 
         for epoch in range(self.args.epoch_size):
 
@@ -179,7 +179,7 @@ class DiscoGANRisk(DiscoGAN):
                 pbar.update(i)
 
                 # read batch data
-                A, B = read_images(A_paths, B_paths, self.args.image_size, self.cuda)
+                A, B = read_images(A_paths, B_paths, self.args.image_size, self.cuda, self.args.dataset)
 
                 # calculate losses
                 correlation_rate = self.args.default_correlation_rate

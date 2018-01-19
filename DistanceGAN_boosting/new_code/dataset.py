@@ -1,13 +1,14 @@
 import os
 import cv2
 import numpy as np
-import torch
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.sampler import WeightedRandomSampler
 
 dataset_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'datasets'))
 shoe_path = os.path.join(dataset_path, 'edges2shoes')
 handbag_path = os.path.join(dataset_path, 'edges2handbags')
+maps_path = os.path.join(dataset_path, 'maps')
+city_path = os.path.join(dataset_path, 'cityscapes')
 
 
 def read_images(filenames, domain=None, image_size=64, split=256):
@@ -36,16 +37,24 @@ def read_images(filenames, domain=None, image_size=64, split=256):
     return images
 
 
+def get_maps(test=False, number_of_samples=None):
+    return _get_data(maps_path, test, number_of_samples)
+
+
+def get_city_scapes(test=False, number_of_samples=None):
+    return _get_data(city_path, test, number_of_samples, test_dir='test')
+
+
 def get_edges2shoes(test=False, number_of_samples=None):
     return _get_data(shoe_path, test, number_of_samples)
 
 
-def get_edges2handbags(test=False, number_of_samples=None):
+def get_edges2handbags(test=False, number_of_samples=None, ):
     return _get_data(handbag_path, test, number_of_samples)
 
 
-def _get_data(item_path, test=False, number_of_samples=None):
-    item_path = os.path.join(item_path, 'val' if test else 'train')
+def _get_data(item_path, test=False, number_of_samples=None, test_dir='val'):
+    item_path = os.path.join(item_path, test_dir if test else 'train')
 
     image_paths = [os.path.join(item_path, x) for x in os.listdir(item_path)]
 
