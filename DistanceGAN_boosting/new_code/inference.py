@@ -68,9 +68,10 @@ def run_test_with_boosting(options1, options2, mode='thresh', thresh=None):
         #idx's that the error is bigger than threshold, on these images we will run the boosting
         second_round_idx = np.where(J_loss_val > thresh)
     elif mode == 'ranking':
-        first_round_idx = np.asarray([i for i in range(200) if np.where(J_loss_order == i)[0] > np.where(J_loss_order2 == i)[0]])
+        n_samples = len(J_loss_order)
+        first_round_idx = np.asarray([i for i in range(n_samples) if np.where(J_loss_order == i)[0] > np.where(J_loss_order2 == i)[0]])
         second_round_idx = np.asarray(
-            [i for i in range(200) if np.where(J_loss_order == i)[0] <= np.where(J_loss_order2 == i)[0]])
+            [i for i in range(n_samples) if np.where(J_loss_order == i)[0] <= np.where(J_loss_order2 == i)[0]])
 
 
 
