@@ -1,19 +1,24 @@
 import argparse
 
+import os
+
 
 class Options():
-    def __init__(self, cuda='true', task_name='task', dataset='edges2shoes', epoch_size=78, batch_size=64, learning_rate=0.0002,
-                 model_arch='discogan', image_size=64, gan_curriculum=10000, starting_rate=0.01, default_rate=0.5,
-                 style_A=None, style_B=None, constraint=None, constraint_type=None, n_test=200, update_interval=3,
-                 log_interval=50, image_save_interval=1000, model_save_interval=10000, result_path='./results/',
-                 model_path='./models/', use_self_distance=False, unnormalized_distances=False, max_items=300,
-                 use_reconst_loss=False, num_layers=4, num_layers_second_gan=4, starting_correlation_rate=1,
-                 default_correlation_rate=1, number_of_samples=500, not_all_samples=False, port=8097, test_mode=False,
-                 which_epoch_load=3, one_sample_index=0, continue_training=False, indiv_gan_rate=1,fixed_g1=False,
-                 start_from_pretrained_g1=False, start_from_pretrained_g2=False, one_sample_train=False, is_auto_detect_training_version=True):
+    def __init__(self, cuda='true', task_name='task', dataset='edges2shoes', round=-1, epoch_size=78, batch_size=64,
+                 learning_rate=0.0002, model_arch='discogan', image_size=64, gan_curriculum=10000, starting_rate=0.01,
+                 default_rate=0.5, style_A=None, style_B=None, constraint=None, constraint_type=None, n_test=200,
+                 update_interval=3, log_interval=50, image_save_interval=1000, model_save_interval=10000,
+                 result_path='./results/', model_path='./models/', use_self_distance=False,
+                 unnormalized_distances=False, max_items=300, use_reconst_loss=False, num_layers=4,
+                 num_layers_second_gan=4, starting_correlation_rate=1, default_correlation_rate=1,
+                 number_of_samples=500, not_all_samples=False, port=8097, test_mode=False, which_epoch_load=3,
+                 one_sample_index=0, continue_training=False, indiv_gan_rate=1, fixed_g1=False,
+                 start_from_pretrained_g1=False, start_from_pretrained_g2=False, one_sample_train=False,
+                 is_auto_detect_training_version=True):
         self.cuda = cuda
         self.task_name = task_name
         self.dataset = dataset
+        self.round = round
         self.epoch_size = epoch_size
         self.batch_size = batch_size
         self.learning_rate = learning_rate
@@ -61,6 +66,19 @@ class Options():
         args = cmd_opt.get_args()
         args.__class__ = Options
         return args
+
+    def get_result_path(self):
+        path = os.path.join(self.result_path, self.task_name, self.dataset)
+        return self._append_round(path)
+
+    def get_model_path(self):
+        path = os.path.join(self.model_path, self.task_name, self.dataset)
+        return self._append_round(path)
+
+    def _append_round(self, path):
+        if self.round == -1:
+            return path
+        return os.path.join(path, str(self.round))
 
 
 class CmdOptions(object):
@@ -131,7 +149,7 @@ class CmdOptions(object):
         self.parser.add_argument('--start_from_pretrained_g1', action='store_true')
         self.parser.add_argument('--start_from_pretrained_g2', action='store_true')
         self.parser.add_argument('--one_sample_train', action='store_true')
-        
+
     def get_args(self):
         return self.parser.parse_args()
 
