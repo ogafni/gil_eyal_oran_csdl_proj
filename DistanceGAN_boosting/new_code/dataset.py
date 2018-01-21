@@ -91,6 +91,6 @@ def get_data_loaders(data_a, data_b, batch_size, b_weights=None):
 
     a_dataloader = DataLoader(a_dataset, batch_size=batch_size, shuffle=True)
     # Weights should only apply to B
-    sampler = WeightedRandomSampler(b_weights, len(b_weights)) if b_weights else None
+    sampler = None if b_weights is None else WeightedRandomSampler(b_weights, len(b_weights))
     b_dataloader = DataLoader(b_dataset, batch_size=batch_size, sampler=sampler, shuffle=sampler == None)
     return a_dataloader, b_dataloader
