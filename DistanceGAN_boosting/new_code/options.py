@@ -9,11 +9,11 @@ class Options():
                  default_rate=0.5, style_A=None, style_B=None, constraint=None, constraint_type=None, n_test=200,
                  update_interval=3, log_interval=50, image_save_interval=1000, model_save_interval=10000,
                  result_path='./results/', model_path='./models/', use_self_distance=False,
-                 unnormalized_distances=False, max_items=300, use_reconst_loss=False, num_layers=4,
-                 num_layers_second_gan=4, starting_correlation_rate=1, default_correlation_rate=1,
+                 unnormalized_distances=False, max_items=300, use_reconst_loss=False, num_layers=3,
+                 num_layers_second_gan=3, starting_correlation_rate=1, default_correlation_rate=1,
                  number_of_samples=500, not_all_samples=False, port=8097, test_mode=False, which_epoch_load=3,
                  one_sample_index=0, continue_training=False, indiv_gan_rate=1, fixed_g1=False,
-                 start_from_pretrained_g1=False, start_from_pretrained_g2=False, one_sample_train=False,
+                 start_from_pretrained_g1=False, start_from_pretrained_g2=False, one_sample_train=True,
                  is_auto_detect_training_version=True):
         self.cuda = cuda
         self.task_name = task_name
