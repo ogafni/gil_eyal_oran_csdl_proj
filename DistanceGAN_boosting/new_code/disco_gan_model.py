@@ -6,13 +6,14 @@ from progressbar import ETA, Bar, Percentage, ProgressBar
 from itertools import chain
 from tensorboardX import SummaryWriter
 
+from .models_repository import ModelsRepository
 from .error_bound_calc_functions import calc_mean_gt_error
 from .utils import *
 from .model import Discriminator, Generator
 from .dataset import get_data_loaders
 
 
-def get_xnators(Xnator_A,Xnator_B, cuda, learning_rate):
+def get_xnators(Xnator_A, Xnator_B, cuda, learning_rate):
     if cuda:
         Xnator_A = Xnator_A.cuda()
         Xnator_B = Xnator_B.cuda()
@@ -22,47 +23,10 @@ def get_xnators(Xnator_A,Xnator_B, cuda, learning_rate):
     return Xnator_A, Xnator_B, optim_dis
 
 
-def load_and_print(path):
-    print('Loading {}'.format(path))
-    return torch.load(path)
-
-
-def get_generators(cuda, num_layers, learning_rate, gen_A_path = None, gen_B_path = None):
-    if gen_A_path is not None:
-        generator_A = load_and_print(gen_A_path)
-    else:
-        generator_A = Generator(num_layers=num_layers)
-
-    if gen_B_path is not None:
-        generator_B = load_and_print(gen_B_path)
-    else:
-        generator_B = Generator(num_layers=num_layers)
-
-    return get_xnators(generator_A, generator_B, cuda, learning_rate)
-
-
-def get_discriminators(cuda, learning_rate, dis_A_path = None, dis_B_path = None):
-    if dis_A_path is not None:
-        discriminator_A = load_and_print(dis_A_path)
-    else:
-        discriminator_A = Discriminator()
-
-    if dis_B_path is not None:
-        discriminator_B = load_and_print(dis_B_path)
-    else:
-        discriminator_B = Discriminator()
-
-    return get_xnators(discriminator_A, discriminator_B, cuda, learning_rate)
-
-
 def save_images_list(images, suffix, version, board_writer):
     for i, image in enumerate(images):
         name = '{0}_{1}'.format(i, suffix)
         board_writer.add_image(name, image, version)
-
-
-
-
 
 
 class DiscoGAN():
@@ -71,64 +35,39 @@ class DiscoGAN():
         self.cuda = self.args.cuda == 'true'
 
         self.result_path = self.args.get_result_path()
-        self.model_path = self.args.get_model_path()
+        os.makedirs(self.result_path, exist_ok=True)
         self.board_writer = SummaryWriter(os.path.join(self.result_path, "log"))
 
-        os.makedirs(self.result_path, exist_ok=True)
-        os.makedirs(os.path.join(self.model_path,'G1'), exist_ok=True)
-
-        lr = self.args.learning_rate
+        self.models_repository = ModelsRepository(self.args.get_model_path())
 
         self.is_keep_training = True
-        self.last_exist_model_g1 = self.check_all_saved_models(os.path.join(self.model_path,'G1'))
-        if self.args.is_auto_detect_training_version:
-            self.args.which_epoch_load = self.last_exist_model_g1
+        self.first_image_write = True
 
-        if self.args.start_from_pretrained_g1 or (self.args.is_auto_detect_training_version and self.last_exist_model_g1):
-            gen_A_path = os.path.join(self.model_path,'G1',
-                                      'model_gen_A_G1-' + str(self.args.which_epoch_load))
-            gen_B_path = os.path.join(self.model_path,'G1',
-                                      'model_gen_B_G1-' + str(self.args.which_epoch_load))
-            dis_A_path = os.path.join(self.model_path,'G1',
-                                      'model_dis_A_G1-' + str(self.args.which_epoch_load))
-            dis_B_path = os.path.join(self.model_path,'G1',
-                                      'model_dis_B_G1-' + str(self.args.which_epoch_load))
-            self.generator_A, self.generator_B, self.optim_gen = get_generators(self.cuda, self.args.num_layers, lr, gen_A_path, gen_B_path)
-            self.discriminator_A, self.discriminator_B, self.optim_dis = get_discriminators(self.cuda, lr, dis_A_path, dis_B_path)
+        if self.args.is_auto_detect_training_version and self.models_repository.has_models():
+            gen_a, gen_b, dis_a, dis_b, self.last_exist_model_g1 = self.models_repository.get_models()
         else:
-            self.generator_A, self.generator_B, self.optim_gen = get_generators(self.cuda, self.args.num_layers, lr)
-            self.discriminator_A, self.discriminator_B, self.optim_dis = get_discriminators(self.cuda, lr)
+            gen_a, gen_b, dis_a, dis_b = self.get_new_models()
+            self.last_exist_model_g1 = 0
+
+        lr = self.args.learning_rate
+        self.generator_A, self.generator_B, self.optim_gen = get_xnators(gen_a, gen_b, self.cuda, lr)
+        self.discriminator_A, self.discriminator_B, self.optim_dis = get_xnators(dis_a, dis_b, self.cuda, lr)
 
         self.recon_criterion = nn.MSELoss()
         self.gan_criterion = nn.BCELoss()
         self.feat_criterion = nn.HingeEmbeddingLoss()
 
-        self.first_image_write = True
-
-    def check_saved_model(self, prefix):
-        lastexist = 0
-        for idx in range(4):
-            if os.path.isfile(prefix + str(idx)):
-                lastexist = idx
-        return lastexist
-
-    def check_all_saved_models(self, dir, g_num=1):
-        if dir is None:
-            return 0
-        g_num = str(g_num)
-        prefixes = ['model_gen_A_G'+g_num+'-', 'model_gen_B_G'+g_num+'-', 'model_dis_A_G'+g_num+'-', 'model_dis_B_G'+g_num+'-']
-        lastexist = 3
-        for prefix in prefixes:
-            lastexist = min(lastexist, self.check_saved_model(os.path.join(dir, prefix)))
-
-        return lastexist
+    def get_new_models(self):
+        gen_a = Generator(num_layers=self.args.num_layers)
+        gen_b = Generator(num_layers=self.args.num_layers)
+        dis_a = Discriminator()
+        dis_b = Discriminator()
+        return gen_a, gen_b, dis_a, dis_b
 
     def _save_model(self):
         version = str(int(self.iters / self.args.model_save_interval))
-        torch.save(self.generator_A, os.path.join(self.model_path, 'G1', 'model_gen_A_G1-' + version))
-        torch.save(self.generator_B, os.path.join(self.model_path, 'G1', 'model_gen_B_G1-' + version))
-        torch.save(self.discriminator_A, os.path.join(self.model_path, 'G1', 'model_dis_A_G1-' + version))
-        torch.save(self.discriminator_B, os.path.join(self.model_path, 'G1', 'model_dis_B_G1-' + version))
+        self.models_repository.save_model(self.generator_A, self.generator_B, self.discriminator_A,
+                                          self.discriminator_B, version)
         if version == '3':
             self.is_keep_training = False
 
@@ -215,10 +154,9 @@ class DiscoGAN():
         n_batches = math.ceil(len(data_A) / self.args.batch_size)
         print('%d batches per epoch' % n_batches)
         if self.args.is_auto_detect_training_version:
-            self.iters = self.last_exist_model_g1*self.args.model_save_interval
+            self.iters = self.last_exist_model_g1 * self.args.model_save_interval
         else:
             self.iters = 0
-
 
         a_dataloader, b_dataloader = get_data_loaders(data_A, data_B, self.args.batch_size, b_weights)
 
@@ -257,8 +195,6 @@ class DiscoGAN():
                 self.iters += 1
 
                 self._log_state(A_paths, B_paths, data_A_val, data_B_val)
-
-
 
                 if not self.is_keep_training:
                     break

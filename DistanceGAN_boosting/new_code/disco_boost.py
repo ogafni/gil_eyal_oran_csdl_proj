@@ -1,10 +1,16 @@
 import copy
 import numpy as np
 import os
+import torch
 
 from .disco_gan_with_risk import DiscoGANRisk
 from .error_bound_calc_functions import samples_order_by_loss_from_filenames
-from .disco_gan_model import load_and_print, DiscoGAN
+from .disco_gan_model import DiscoGAN
+
+
+def load_and_print(path):
+    print('Loading {}'.format(path))
+    return torch.load(path)
 
 
 # stopping criterias
