@@ -57,11 +57,10 @@ def samples_order_by_loss(samples, labels, G1, G2, n_batch=64):
     - ground truth loss vector
     """
     n_samples = len(samples)  # number of samples in the dataset
-    print('Number of samples: ', n_samples)
+    print('Calculating bounds of {0} samples'.format(n_samples))
     bounds = np.zeros(n_samples, dtype=float)  # initalize loss vec
     ground_truth_loss = np.zeros(n_samples, dtype=float)  # initalize ground truth loss vec
     n_iter = math.ceil(n_samples / n_batch)
-    print('Number of iterations: ', n_iter)
     widgets = [Percentage(), Bar(), ETA()]
     pbar = ProgressBar(maxval=n_iter, widgets=widgets)
     pbar.start()
