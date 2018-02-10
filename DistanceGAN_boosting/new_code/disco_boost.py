@@ -53,14 +53,16 @@ class DiscoBoost:
         round_options.round = round
         return DiscoGANRisk(round_options)
 
-    def _save_model_round(self, round, G1, G2):
-        torch.save(G1, os.path.join(self.model_path, 'boosted', 'model_gen_A_G1-' + round))
-        torch.save(G2, os.path.join(self.model_path, 'boosted', 'model_gen_A_G2-' + round))
+    # def _save_model_round(self, round, G1, G2):
+    #     torch.save(G1, os.path.join(self.options.model_path, 'boosted', 'model_gen_A_G1-' + str(round)))
+    #     torch.save(G2, os.path.join(self.options.model_path, 'boosted', 'model_gen_A_G2-' + str(round)))
 
     def _get_boosted_gen(self, round):
-        G1 = load_and_print(os.path.join(self.model_path, 'boosted', 'model_gen_A_G1-' + round))
-        G2 = load_and_print(os.path.join(self.model_path, 'boosted', 'model_gen_A_G2-' + round))
-        if self.cuda:
+        #G1 = load_and_print(os.path.join(self.options.model_path, 'boosted', 'model_gen_A_G1-' + str(round)))
+        #G2 = load_and_print(os.path.join(self.options.model_path, 'boosted', 'model_gen_A_G2-' + str(round)))
+        G1 = load_and_print(os.path.join(self.options.model_path, 'G1', str(round), 'model_gen_A_G1-'))
+        G2 = load_and_print(os.path.join(self.options.model_path, 'G2', str(round), 'model_gen_A_G2-'))
+        if self.options.cuda:
             G1 = G1.cuda()
             G2 = G2.cuda()
         return G1, G2
@@ -73,7 +75,6 @@ class DiscoBoost:
             current_model = self._get_round_model(round)
             current_model.train(data_A, data_B, data_A_val, data_B_val, weights)
             G1, G2 = current_model.generator_A, current_model.generator_A_G2
-            self._save_model_round(round, G1, G2)
             _, bounds, _ = samples_order_by_loss_from_filenames(data_B, data_B, G1, G2, self.options.cuda,
                                                                 self.options.batch_size)
 
@@ -110,7 +111,7 @@ class DiscoBoost:
 
         final_boost_gt_mean = np.mean(final_boost_gt)
         print("G0 Ref GT Loss: {:.3}, Boosting GT Loss: {:.3}".format(np.mean(ref_gt_mean), np.mean(final_boost_gt_mean)))
-        
+
 
 
 
