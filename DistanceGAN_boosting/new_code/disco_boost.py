@@ -1,11 +1,11 @@
 import copy
 import numpy as np
-import torch
 import os
 
 from .disco_gan_with_risk import DiscoGANRisk
 from .error_bound_calc_functions import samples_order_by_loss_from_filenames
-from .disco_gan_model import load_and_print, get_generators
+from .disco_gan_model import load_and_print, DiscoGAN
+
 
 # stopping criterias
 class RoundsSC:
@@ -48,10 +48,20 @@ class DiscoBoost:
         self.stopping_criteria = stopping_criteria
         self.bounds = []
 
-    def _get_round_model(self, round):
+    def _get_round_options(self, round):
         round_options = copy.copy(self.options)
         round_options.round = round
+        return round_options
+
+    def _get_round_disco_gan(self, round):
+        round_options = self._get_round_options(round)
+        return DiscoGAN(round_options)
+
+    def _get_round_disco_gan_with_risk(self, round):
+        round_options = self._get_round_options(round)
+        round_options.fixed_g1 = True
         return DiscoGANRisk(round_options)
+
 
     def _get_boosted_gen(self, round):
         G1 = load_and_print(os.path.join(self.options.model_path, self.options.task_name, self.options.dataset,
@@ -76,14 +86,16 @@ class DiscoBoost:
         round = 1
         while not self.stopping_criteria(round, self.bounds, weights):
             print('Round {0}: {1} samples'.format(round, sum(weights > 0)))
-            current_model = self._get_round_model(round)
-            current_model.train(data_A, data_B, data_A_val, data_B_val, weights)
+            gan = self._get_round_disco_gan(round)
+            gan.train(data_A, data_B, data_A_val, data_B_val, weights)
+            gan_with_risk = self._get_round_disco_gan_with_risk(round)
+            gan_with_risk.train(data_A, data_B, data_A_val, data_B_val, weights)
             if self.options.direction_btoa:
-                G1, G2 = current_model.generator_A, current_model.generator_A_G2
+                G1, G2 = gan_with_risk.generator_A, gan_with_risk.generator_A_G2
                 _, bounds, _ = samples_order_by_loss_from_filenames(data_B, data_B, G1, G2, self.options.cuda,
-                                                                self.options.batch_size)
+                                                                    self.options.batch_size)
             else:
-                G1, G2 = current_model.generator_B, current_model.generator_B_G2
+                G1, G2 = gan_with_risk.generator_B, gan_with_risk.generator_B_G2
                 _, bounds, _ = samples_order_by_loss_from_filenames(data_A, data_A, G1, G2, self.options.cuda,
                                                                     self.options.batch_size)
             self.bounds.append(bounds)

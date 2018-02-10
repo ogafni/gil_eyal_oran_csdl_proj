@@ -8,7 +8,7 @@ if __name__ == "__main__": # These settings are used since G1 fixed training is 
     options = Options(task_name='boost_debug', dataset='edges2shoes', epoch_size=5, model_save_interval=25,
                       result_path='./results/', model_path='./models/', continue_training=False, indiv_gan_rate=1,
                       fixed_g1=False, start_from_pretrained_g1=False, start_from_pretrained_g2=False,
-                      is_auto_detect_training_version=False, direction_btoa=True)
+                      is_auto_detect_training_version=True, direction_btoa=True)
     weighter = KeepBadWeighter(0.7)
     sc = RoundsSC(3)
     model = DiscoBoost(options, weighter, sc)
