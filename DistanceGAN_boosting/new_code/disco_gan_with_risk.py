@@ -4,7 +4,7 @@ import torch.nn as nn
 from progressbar import ETA, Bar, Percentage, ProgressBar
 
 from .dataset import get_data_loaders
-from .disco_gan_model import DiscoGAN, get_generators, get_discriminators
+from .disco_gan_model import DiscoGAN, get_xnators
 from .error_bound_calc_functions import calc_mean_gt_error, calc_mean_error_bound, calc_correlation
 from .utils import *
 
@@ -17,47 +17,27 @@ class DiscoGANRisk(DiscoGAN):
         self.result_path_2 = os.path.join(self.result_path, 'G2')
         os.makedirs(self.result_path_1, exist_ok=True)
         os.makedirs(self.result_path_2, exist_ok=True)
-        os.makedirs(os.path.join(self.model_path, 'G2'), exist_ok=True)
+
+        if self.args.is_auto_detect_training_version and self.models_repository.has_models(False):
+            gen_a, gen_b, dis_a, dis_b, self.last_exist_model_g2 = self.models_repository.get_models(False)
+        else:
+            self.last_exist_model_g2 = 0
+            if self.args.pretrained_g2:
+                gen_a, gen_b, dis_a, dis_b, _ = self.models_repository.get_models(False, path=self.args.pretrained_g2)
+            else:
+                gen_a, gen_b, dis_a, dis_b = self._get_new_models()
 
         lr = self.args.learning_rate
-
-        self.last_exist_model_g2 = self.check_all_saved_models(os.path.join(self.model_path, 'G2'), g_num=2)
-        if self.args.is_auto_detect_training_version:
-            self.args.which_epoch_load = self.last_exist_model_g2
-
-        if self.args.start_from_pretrained_g2 or (
-            self.args.is_auto_detect_training_version and self.last_exist_model_g2):
-            gen_A_path = os.path.join(self.model_path, 'G2',
-                                      'model_gen_A_G2-' + str(self.args.which_epoch_load))
-            gen_B_path = os.path.join(self.model_path, 'G2',
-                                      'model_gen_B_G2-' + str(self.args.which_epoch_load))
-            dis_A_path = os.path.join(self.model_path, 'G2',
-                                      'model_dis_A_G2-' + str(self.args.which_epoch_load))
-            dis_B_path = os.path.join(self.model_path, 'G2',
-                                      'model_dis_B_G2-' + str(self.args.which_epoch_load))
-            self.generator_A_G2, self.generator_B_G2, self.optim_gen_G2 = get_generators(self.cuda, self.args.num_layers, lr,
-                                                                                gen_A_path, gen_B_path)
-            self.discriminator_A_G2, self.discriminator_B_G2, self.optim_dis_G2 = get_discriminators(self.cuda, lr, dis_A_path,
-                                                                                            dis_B_path)
-        else:
-            self.generator_A_G2, self.generator_B_G2, self.optim_gen_G2 = get_generators(self.cuda,
-                                                                                         self.args.num_layers, lr)
-            self.discriminator_A_G2, self.discriminator_B_G2, self.optim_dis_G2 = get_discriminators(self.cuda, lr)
-
+        self.generator_A_G2, self.generator_B_G2, self.optim_gen_G2 = get_xnators(gen_a, gen_b, self.cuda, lr)
+        self.discriminator_A_G2, self.discriminator_B_G2, self.optim_dis_G2 = get_xnators(dis_a, dis_b, self.cuda, lr)
 
         self.correlation_criterion = nn.L1Loss()
 
     def _save_model(self):
         version = str(int(self.iters / self.args.model_save_interval))
-        torch.save(self.generator_A, os.path.join(self.model_path,'G1', 'model_gen_A_G1-' + version))
-        torch.save(self.generator_B, os.path.join(self.model_path,'G1', 'model_gen_B_G1-' + version))
-        torch.save(self.discriminator_A, os.path.join(self.model_path,'G1', 'model_dis_A_G1-' + version))
-        torch.save(self.discriminator_B, os.path.join(self.model_path,'G1', 'model_dis_B_G1-' + version))
-        torch.save(self.generator_A_G2, os.path.join(self.model_path,'G2', 'model_gen_A_G2-' + version))
-        torch.save(self.generator_B_G2, os.path.join(self.model_path,'G2', 'model_gen_B_G2-' + version))
-        torch.save(self.discriminator_A_G2, os.path.join(self.model_path,'G2', 'model_dis_A_G2-' + version))
-        torch.save(self.discriminator_B_G2, os.path.join(self.model_path,'G2', 'model_dis_B_G2-' + version))
-        print('Models checkpoint saved at {0}, version {1}'.format(self.model_path,'G1', version))
+        super()._save_model()
+        self.models_repository.save_model(self.generator_A_G2, self.generator_B_G2, self.discriminator_A_G2,
+                                          self.discriminator_B_G2, version, False)
         if version == '3':
             self.is_keep_training = False
 
@@ -85,15 +65,16 @@ class DiscoGANRisk(DiscoGAN):
         BA_2 = self.generator_A_G2(B)
         if self.args.one_sample_train:
             one_sample_index = self.args.one_sample_index
-            AB_1, BA_1= AB_1[one_sample_index], BA_1[one_sample_index]
-            AB_2, BA_2= AB_2[one_sample_index], BA_2[one_sample_index]
+            AB_1, BA_1 = AB_1[one_sample_index], BA_1[one_sample_index]
+            AB_2, BA_2 = AB_2[one_sample_index], BA_2[one_sample_index]
         # Correlation loss
         # Distance between generator 1 and generator 2's output
         correlation_loss_AB_2 = - self.correlation_criterion(AB_2, to_no_grad_var(AB_1))
         correlation_loss_BA_2 = - self.correlation_criterion(BA_2, to_no_grad_var(BA_1))
         return correlation_loss_AB_2, correlation_loss_BA_2
 
-    def _calc_loss_one(self, generator_A, generator_B, discriminator_A, discriminator_B, A, B, one_sample_A, one_sample_B, rate):
+    def _calc_loss_one(self, generator_A, generator_B, discriminator_A, discriminator_B, A, B, one_sample_A,
+                       one_sample_B, rate):
         one_sample_index = self.args.one_sample_index
         generator_A.zero_grad()
         generator_B.zero_grad()
@@ -132,7 +113,8 @@ class DiscoGANRisk(DiscoGAN):
         # Additional for one-sample mode (A)
         A_dis_real, A_feats_real = discriminator_A(one_sample_A[one_sample_index: one_sample_index + 1])
         A_dis_fake, A_feats_fake = discriminator_A(one_sample_BA_full[one_sample_index: one_sample_index + 1])
-        one_sample_dis_loss_A, one_sample_gen_loss_A = get_gan_loss(A_dis_real, A_dis_fake, self.gan_criterion, self.cuda)
+        one_sample_dis_loss_A, one_sample_gen_loss_A = get_gan_loss(A_dis_real, A_dis_fake, self.gan_criterion,
+                                                                    self.cuda)
         one_sample_fm_loss_A = get_fm_loss(A_feats_real, A_feats_fake, self.feat_criterion)
         gen_loss_A += one_sample_gen_loss_A
         fm_loss_A += one_sample_fm_loss_A
@@ -141,7 +123,8 @@ class DiscoGANRisk(DiscoGAN):
         # Additional for one-sample mode (A)
         B_dis_real, B_feats_real = discriminator_B(one_sample_B[one_sample_index: one_sample_index + 1])
         B_dis_fake, B_feats_fake = discriminator_B(one_sample_AB_full[one_sample_index: one_sample_index + 1])
-        one_sample_dis_loss_B, one_sample_gen_loss_B = get_gan_loss(B_dis_real, B_dis_fake, self.gan_criterion, self.cuda)
+        one_sample_dis_loss_B, one_sample_gen_loss_B = get_gan_loss(B_dis_real, B_dis_fake, self.gan_criterion,
+                                                                    self.cuda)
         one_sample_fm_loss_B = get_fm_loss(B_feats_real, B_feats_fake, self.feat_criterion)
         gen_loss_B += one_sample_gen_loss_B
         fm_loss_B += one_sample_fm_loss_B
@@ -161,7 +144,7 @@ class DiscoGANRisk(DiscoGAN):
         n_batches = math.ceil((len(data_A)) / self.args.batch_size)
         print('%d batches per epoch' % n_batches)
         if self.args.is_auto_detect_training_version:
-            self.iters = self.last_exist_model_g2*self.args.model_save_interval
+            self.iters = self.last_exist_model_g2 * self.args.model_save_interval
         else:
             self.iters = 0
         a_dataloader, b_dataloader = get_data_loaders(data_A, data_B, self.args.batch_size, b_weights)
@@ -193,7 +176,8 @@ class DiscoGANRisk(DiscoGAN):
 
                 # Calculate G1 for both cases
                 self.dis_loss_A, self.dis_loss_B, self.gen_loss_A, self.gen_loss_B, self.recon_loss_A, self.recon_loss_B = \
-                    self._calc_loss(self.generator_A, self.generator_B, self.discriminator_A, self.discriminator_B, A, B, rate)
+                    self._calc_loss(self.generator_A, self.generator_B, self.discriminator_A, self.discriminator_B, A,
+                                    B, rate)
                 # Calculate G2 for one-sample mode
                 if self.args.one_sample_train:
                     self.dis_loss_A_2, self.dis_loss_B_2, self.gen_loss_A_2, self.gen_loss_B_2, self.recon_loss_A_2, self.recon_loss_B_2 = \
@@ -236,7 +220,6 @@ class DiscoGANRisk(DiscoGAN):
                 self.iters += 1
 
                 self._log_state(A_paths, B_paths, data_A_val, data_B_val)
-
 
                 if not self.is_keep_training:
                     break

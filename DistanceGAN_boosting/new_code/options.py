@@ -13,8 +13,8 @@ class Options():
                  num_layers_second_gan=3, starting_correlation_rate=1, default_correlation_rate=1,
                  number_of_samples=500, not_all_samples=False, port=8097, test_mode=False, which_epoch_load=3,
                  one_sample_index=0, continue_training=False, indiv_gan_rate=1, fixed_g1=False,
-                 start_from_pretrained_g1=False, start_from_pretrained_g2=False, one_sample_train=True,
-                 is_auto_detect_training_version=True):
+                 pretrained_g1=None, pretrained_g2=None, one_sample_train=True,
+                 is_auto_detect_training_version=True, direction_btoa=True):
         self.cuda = cuda
         self.task_name = task_name
         self.dataset = dataset
@@ -55,10 +55,11 @@ class Options():
         self.continue_training = continue_training
         self.indiv_gan_rate = indiv_gan_rate
         self.fixed_g1 = fixed_g1
-        self.start_from_pretrained_g1 = start_from_pretrained_g1
-        self.start_from_pretrained_g2 = start_from_pretrained_g2
+        self.pretrained_g1 = pretrained_g1
+        self.pretrained_g2 = pretrained_g2
         self.one_sample_train = one_sample_train
         self.is_auto_detect_training_version = is_auto_detect_training_version
+        self.direction_btoa = direction_btoa
 
     @classmethod
     def from_cmd(cls):
@@ -142,13 +143,10 @@ class CmdOptions(object):
         self.parser.add_argument('--continue_training', action='store_true')
         self.parser.add_argument('--indiv_gan_rate', type=float, default=1)
         self.parser.add_argument('--fixed_g1', action='store_true')
-        self.parser.add_argument('--pretrained_g1_path_A', type=str, default=None)
-        self.parser.add_argument('--pretrained_g1_path_B', type=str, default=None)
-        self.parser.add_argument('--pretrained_g2_path_A', type=str, default=None)
-        self.parser.add_argument('--pretrained_g2_path_B', type=str, default=None)
-        self.parser.add_argument('--start_from_pretrained_g1', action='store_true')
-        self.parser.add_argument('--start_from_pretrained_g2', action='store_true')
+        self.parser.add_argument('--pretrained_g1', type=str, default=None)
+        self.parser.add_argument('--pretrained_g2', type=str, default=None)
         self.parser.add_argument('--one_sample_train', action='store_true')
+        self.parser.add_argument('--direction_btoa', action='store_true')
 
     def get_args(self):
         return self.parser.parse_args()
