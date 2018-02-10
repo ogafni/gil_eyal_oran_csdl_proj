@@ -19,7 +19,7 @@ class RoundsSC:
         self.round = round
 
     def __call__(self, round, bounds, weights):
-        return round >= self.round
+        return round > self.round
 
 
 class DataSizeSC:
