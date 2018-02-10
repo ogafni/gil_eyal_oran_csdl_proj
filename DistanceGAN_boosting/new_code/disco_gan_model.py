@@ -46,8 +46,11 @@ class DiscoGAN():
         if self.args.is_auto_detect_training_version and self.models_repository.has_models():
             gen_a, gen_b, dis_a, dis_b, self.last_exist_model_g1 = self.models_repository.get_models()
         else:
-            gen_a, gen_b, dis_a, dis_b = self.get_new_models()
             self.last_exist_model_g1 = 0
+            if self.args.pretrained_g1:
+                gen_a, gen_b, dis_a, dis_b, _ = self.models_repository.get_models(path=self.args.pretrained_g1)
+            else:
+                gen_a, gen_b, dis_a, dis_b = self._get_new_models()
 
         lr = self.args.learning_rate
         self.generator_A, self.generator_B, self.optim_gen = get_xnators(gen_a, gen_b, self.cuda, lr)
@@ -57,7 +60,7 @@ class DiscoGAN():
         self.gan_criterion = nn.BCELoss()
         self.feat_criterion = nn.HingeEmbeddingLoss()
 
-    def get_new_models(self):
+    def _get_new_models(self):
         gen_a = Generator(num_layers=self.args.num_layers)
         gen_b = Generator(num_layers=self.args.num_layers)
         dis_a = Discriminator()

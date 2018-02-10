@@ -52,6 +52,7 @@ class DiscoBoost:
         self.options = options
         self.weighter = weighter
         self.stopping_criteria = stopping_criteria
+        self.round_1_model_path = self._get_round_options(1).get_model_path()
         self.bounds = []
 
     def _get_round_options(self, round):
@@ -61,13 +62,16 @@ class DiscoBoost:
 
     def _get_round_disco_gan(self, round):
         round_options = self._get_round_options(round)
+        if round > 1:
+            round_options.pretrained_g1 = self.round_1_model_path
         return DiscoGAN(round_options)
 
     def _get_round_disco_gan_with_risk(self, round):
         round_options = self._get_round_options(round)
         round_options.fixed_g1 = True
+        if round > 1:
+            round_options.pretrained_g2 = self.round_1_model_path
         return DiscoGANRisk(round_options)
-
 
     def _get_boosted_gen(self, round):
         G1 = load_and_print(os.path.join(self.options.model_path, self.options.task_name, self.options.dataset,

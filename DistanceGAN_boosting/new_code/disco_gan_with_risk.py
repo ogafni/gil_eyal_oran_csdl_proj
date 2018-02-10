@@ -21,8 +21,11 @@ class DiscoGANRisk(DiscoGAN):
         if self.args.is_auto_detect_training_version and self.models_repository.has_models(False):
             gen_a, gen_b, dis_a, dis_b, self.last_exist_model_g2 = self.models_repository.get_models(False)
         else:
-            gen_a, gen_b, dis_a, dis_b = self.get_new_models()
             self.last_exist_model_g2 = 0
+            if self.args.pretrained_g2:
+                gen_a, gen_b, dis_a, dis_b, _ = self.models_repository.get_models(False, path=self.args.pretrained_g2)
+            else:
+                gen_a, gen_b, dis_a, dis_b = self._get_new_models()
 
         lr = self.args.learning_rate
         self.generator_A_G2, self.generator_B_G2, self.optim_gen_G2 = get_xnators(gen_a, gen_b, self.cuda, lr)

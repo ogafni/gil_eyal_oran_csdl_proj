@@ -17,8 +17,8 @@ class ModelsRepository:
     def __init__(self, models_path):
         self.models_path = models_path
 
-    def _get_G_path(self, G1):
-        return os.path.join(self.models_path, 'G1' if G1 else 'G2')
+    def _get_G_path(self, G1, path=None):
+        return os.path.join(path if path else self.models_path, 'G1' if G1 else 'G2')
 
     def save_model(self, gen_a, gen_b, dis_a, dis_b, version, G1=True):
         path = self._get_G_path(G1)
@@ -33,8 +33,8 @@ class ModelsRepository:
         path = self._get_G_path(G1)
         return _get_last_version(path) is not None
 
-    def get_models(self, G1=True):
-        path = self._get_G_path(G1)
+    def get_models(self, G1=True, path=None):
+        path = self._get_G_path(G1, path)
         last_version = _get_last_version(path)
         if last_version is None:
             return None
