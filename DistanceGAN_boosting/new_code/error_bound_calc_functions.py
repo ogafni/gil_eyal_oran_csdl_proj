@@ -77,7 +77,7 @@ def samples_order_by_loss(samples, labels, G1, G2, n_batch=64):
     return J_loss_order, bounds, ground_truth_loss
 
 
-def samples_order_by_loss_from_filenames(dataset_A, dataset_B, G1, G2, is_cuda=True, n_batch=64):
+def samples_order_by_loss_from_filenames(dataset_A, dataset_B, G1, G2, is_cuda=True, n_batch=64, direcion_btoa=True):
     """
     enveloping function for the samples_order_by_loss, receiving list of filenames instead of arrays with images
     :param dataset_A: file names from dataset A
@@ -100,8 +100,10 @@ def samples_order_by_loss_from_filenames(dataset_A, dataset_B, G1, G2, is_cuda=T
     if is_cuda:
         test_A = test_A.cuda(0)
         test_B = test_B.cuda(0)
-    return samples_order_by_loss(test_B, test_A, G1, G2, n_batch)
-
+    if direcion_btoa:
+        return samples_order_by_loss(test_B, test_A, G1, G2, n_batch)
+    else:
+        return samples_order_by_loss(test_A, test_B, G1, G2, n_batch)
 
 def reorder_samples_by_loss(J_loss_order, samples):
     """
