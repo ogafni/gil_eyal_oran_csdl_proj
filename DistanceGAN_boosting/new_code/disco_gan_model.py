@@ -71,7 +71,7 @@ class DiscoGAN():
         version = str(int(self.iters / self.args.model_save_interval))
         self.models_repository.save_model(self.generator_A, self.generator_B, self.discriminator_A,
                                           self.discriminator_B, version)
-        if version == '3':
+        if version == 'self.args.version_save':
             self.is_keep_training = False
 
     def _save_images(self, A, B):
@@ -151,7 +151,7 @@ class DiscoGAN():
 
     def train(self, data_A, data_B, data_A_val, data_B_val, b_weights=None):
 
-        if self.args.is_auto_detect_training_version and self.last_exist_model_g1 == 3:
+        if self.args.is_auto_detect_training_version and self.last_exist_model_g1 == self.args.which_epoch_load:
             return
 
         n_batches = math.ceil(len(data_A) / self.args.batch_size)

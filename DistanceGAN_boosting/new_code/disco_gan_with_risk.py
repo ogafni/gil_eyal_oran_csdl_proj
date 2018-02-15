@@ -38,7 +38,7 @@ class DiscoGANRisk(DiscoGAN):
         super()._save_model()
         self.models_repository.save_model(self.generator_A_G2, self.generator_B_G2, self.discriminator_A_G2,
                                           self.discriminator_B_G2, version, False)
-        if version == '3':
+        if version == 'self.args.version_save':
             self.is_keep_training = False
 
     def _log_losses(self, A, B):
