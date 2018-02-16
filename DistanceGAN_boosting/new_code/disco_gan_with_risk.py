@@ -23,7 +23,8 @@ class DiscoGANRisk(DiscoGAN):
         else:
             self.last_exist_model_g2 = 0
             if self.args.pretrained_g2:
-                gen_a, gen_b, dis_a, dis_b, _ = self.models_repository.get_models(False, path=self.args.pretrained_g2)
+                gen_a, gen_b, dis_a, dis_b, _ = self.models_repository.get_models(False, path=self.args.pretrained_g2,
+                                                                                  wanted_version=self.args.which_epoch_load)
             else:
                 gen_a, gen_b, dis_a, dis_b = self._get_new_models()
 
@@ -38,7 +39,7 @@ class DiscoGANRisk(DiscoGAN):
         super()._save_model()
         self.models_repository.save_model(self.generator_A_G2, self.generator_B_G2, self.discriminator_A_G2,
                                           self.discriminator_B_G2, version, False)
-        if version == '3':
+        if version == 'self.args.version_save':
             self.is_keep_training = False
 
     def _log_losses(self, A, B):
