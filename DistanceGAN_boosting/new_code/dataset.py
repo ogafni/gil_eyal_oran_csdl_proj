@@ -11,7 +11,7 @@ maps_path = os.path.join(dataset_path, 'maps')
 city_path = os.path.join(dataset_path, 'cityscapes')
 
 
-def read_images(filenames, domain=None, image_size=64, split=256):
+def read_images(filenames, domain=None, image_size=64, split=256, is_gray = False):
     images = []
 
     for fn in filenames:
@@ -27,6 +27,10 @@ def read_images(filenames, domain=None, image_size=64, split=256):
             image = 255. - image
         elif domain == 'B':
             image = image[:, split:, :]
+            if is_gray:
+                image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+                image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+
 
         image = cv2.resize(image, (image_size, image_size))
         image = image.astype(np.float32) / 255.
@@ -85,12 +89,11 @@ class DomainAdaptationDataset(Dataset):
         return sample
 
 
-def get_data_loaders(data_a, data_b, batch_size, b_weights=None):
+def get_data_loaders(data_a, data_b, batch_size, b_weights=None, is_shuffle = True):
     a_dataset = DomainAdaptationDataset(data_a)
     b_dataset = DomainAdaptationDataset(data_b)
-
-    a_dataloader = DataLoader(a_dataset, batch_size=batch_size, shuffle=True)
+    a_dataloader = DataLoader(a_dataset, batch_size=batch_size, shuffle=is_shuffle)
     # Weights should only apply to B
     sampler = None if b_weights is None else WeightedRandomSampler(b_weights, len(b_weights))
-    b_dataloader = DataLoader(b_dataset, batch_size=batch_size, sampler=sampler, shuffle=sampler == None)
+    b_dataloader = DataLoader(b_dataset, batch_size=batch_size, sampler=sampler, shuffle=(sampler == None and is_shuffle))
     return a_dataloader, b_dataloader

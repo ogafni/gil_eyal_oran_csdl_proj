@@ -44,13 +44,13 @@ def get_gan_loss(dis_real, dis_fake, gan_criterion, cuda):
     return dis_loss, gen_loss
 
 
-def read_images(A, B, image_size, cuda, dataset, aligned=False):
+def read_images(A, B, image_size, cuda, dataset, aligned=False, is_gray = False):
     split = 600 if dataset=='maps' else 256
     if aligned:
         A = np.concatenate([A, B])
         B = A
-    A = read_dataset_images(A, 'A', image_size, split)
-    B = read_dataset_images(B, 'B', image_size, split)
+    A = read_dataset_images(A, 'A', image_size, split, is_gray)
+    B = read_dataset_images(B, 'B', image_size, split, is_gray)
     A = Variable(torch.FloatTensor(A))
     B = Variable(torch.FloatTensor(B))
     if cuda:
