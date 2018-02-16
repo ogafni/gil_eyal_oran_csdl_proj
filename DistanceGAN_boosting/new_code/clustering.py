@@ -1,5 +1,5 @@
 import numpy as np
-from .disco_gan_model import DiscoGAN, get_generators, get_discriminators
+from .disco_gan_model import DiscoGAN
 import os
 import copy
 import numpy as np
@@ -15,9 +15,12 @@ from shutil import copyfile
 import pickle
 from sklearn.decomposition import PCA
 
-class Clustering(DiscoGAN):
+class Clustering():
     def __init__(self, options):
-        super().__init__(options)
+        self.gan = DiscoGAN(options)
+        self.args = options
+        self.model_path = self.args.get_model_path()
+
 
     def _calc_dis_activation(self, discriminator_A, discriminator_B, A, B):
         A_dis_real, A_feats_real = discriminator_A(A)
@@ -35,9 +38,9 @@ class Clustering(DiscoGAN):
                 for i, (A_paths, B_paths) in enumerate(zip(a_dataloader, b_dataloader)):
 
                     # read batch data
-                    A, B = read_images(A_paths, B_paths, self.args.image_size, self.cuda, self.args.dataset, is_gray)
+                    A, B = read_images(A_paths, B_paths, self.args.image_size, self.args.cuda, self.args.dataset, False, is_gray)
 
-                    A_feats_real, B_feats_real = self._calc_dis_activation(self.discriminator_A, self.discriminator_B, A, B)
+                    A_feats_real, B_feats_real = self._calc_dis_activation(self.gan.discriminator_A, self.gan.discriminator_B, A, B)
                     #temp = np.mean(B_feats_real[2].cpu().data.numpy(),axis=(2,3))
                     temp = B_feats_real[2].cpu().data.numpy()
                     temp = temp.reshape((temp.shape[0],temp.shape[1]*temp.shape[2]*temp.shape[3]))

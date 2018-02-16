@@ -4,8 +4,8 @@ from new_code.clustering import Clustering
 
 if __name__ == "__main__":
     options = Options()
-    options.model_path='/home/gil/MEGA'
-    options.task_name='task'
+    options.model_path='/home/gil/MEGA/saved_models'
+    options.task_name='referece'
     options.epoch_size
     #options.cuda='false'
     options.number_of_samples=10000
