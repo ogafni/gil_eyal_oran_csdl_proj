@@ -33,14 +33,16 @@ class ModelsRepository:
         path = self._get_G_path(G1)
         return _get_last_version(path) is not None
 
-    def get_models(self, G1=True, path=None):
+    def get_models(self, G1=True, path=None, wanted_version=None):
         path = self._get_G_path(G1, path)
         last_version = _get_last_version(path)
         if last_version is None:
             return None
+        if wanted_version is not None:
+            last_version = wanted_version
         print('Loading {0} version {1} from path {2}'.format('G1' if G1 else 'G2', last_version, path))
-        gen_a = torch.load(os.path.join(path, 'gen_A-' + last_version))
-        gen_b = torch.load(os.path.join(path, 'gen_B-' + last_version))
-        dis_a = torch.load(os.path.join(path, 'dis_A-' + last_version))
-        dis_b = torch.load(os.path.join(path, 'dis_B-' + last_version))
+        gen_a = torch.load(os.path.join(path, 'gen_A-' + str(last_version)))
+        gen_b = torch.load(os.path.join(path, 'gen_B-' + str(last_version)))
+        dis_a = torch.load(os.path.join(path, 'dis_A-' + str(last_version)))
+        dis_b = torch.load(os.path.join(path, 'dis_B-' + str(last_version)))
         return gen_a, gen_b, dis_a, dis_b, int(last_version)

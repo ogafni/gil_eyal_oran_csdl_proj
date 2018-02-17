@@ -48,7 +48,9 @@ class DiscoGAN():
         else:
             self.last_exist_model_g1 = 0
             if self.args.pretrained_g1:
-                gen_a, gen_b, dis_a, dis_b, _ = self.models_repository.get_models(path=self.args.pretrained_g1)
+                gen_a, gen_b, dis_a, dis_b, _ = self.models_repository.get_models(path=self.args.pretrained_g1,
+                                                                                  wanted_version=
+                                                                                  self.args.which_epoch_load)
             else:
                 gen_a, gen_b, dis_a, dis_b = self._get_new_models()
 
