@@ -32,6 +32,7 @@ class Clustering():
             n_batches = math.ceil(len(data_A) / self.args.batch_size)
             print('%d batches per epoch' % n_batches)
             all_feats = np.empty(shape=(0,512*16))
+            all_names = []
             a_dataloader, b_dataloader = get_data_loaders(data_A, data_B, self.args.batch_size,None,False)
             is_gray = True
             if not os.path.exists(os.path.join(self.model_path, 'dis_feats.npy')):
@@ -45,6 +46,7 @@ class Clustering():
                     temp = B_feats_real[2].cpu().data.numpy()
                     temp = temp.reshape((temp.shape[0],temp.shape[1]*temp.shape[2]*temp.shape[3]))
                     all_feats=np.concatenate((all_feats,temp))
+                    all_names += B_paths
                     print(i)
                 np.save(os.path.join(self.model_path, 'dis_feats.npy'),all_feats)
 
@@ -60,10 +62,10 @@ class Clustering():
             if not os.path.exists(os.path.join(self.model_path, 'kmenas.pkl')):
                 codebook, labels = kmeans2(white_feats, k)
                 with open(os.path.join(self.model_path, 'kmenas.pkl'), 'wb') as f:
-                    pickle.dump([codebook, labels], f)
+                    pickle.dump([codebook, labels, all_names], f)
             else:
                 with open(os.path.join(self.model_path, 'kmenas.pkl'), 'rb') as f:
-                    codebook, labels = pickle.load(f)
+                    codebook, labels, all_names = pickle.load(f)
 
             os.makedirs(os.path.join(self.model_path, 'clusters'),exist_ok=True)
             for idx in range(k):
