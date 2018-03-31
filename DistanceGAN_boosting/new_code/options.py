@@ -14,7 +14,8 @@ class Options():
                  number_of_samples=500, not_all_samples=False, port=8097, test_mode=False, which_epoch_load=3,
                  one_sample_index=0, continue_training=False, indiv_gan_rate=1, fixed_g1=False,
                  pretrained_g1=None, pretrained_g2=None, one_sample_train=True,
-                 is_auto_detect_training_version=True, direction_btoa=True, version_save=3):
+                 is_auto_detect_training_version=True, direction_btoa=True, version_save=3, k_clusters=5,
+                 cluster_file=None, cluster_idx=-1, is_cluster_A=False):
         self.cuda = cuda
         self.task_name = task_name
         self.dataset = dataset
@@ -61,6 +62,10 @@ class Options():
         self.is_auto_detect_training_version = is_auto_detect_training_version
         self.direction_btoa = direction_btoa
         self.version_save = version_save
+        self.k_clusters = k_clusters
+        self.cluster_file=cluster_file
+        self.cluster_idx=cluster_idx
+        self.is_cluster_A=is_cluster_A
 
     @classmethod
     def from_cmd(cls):

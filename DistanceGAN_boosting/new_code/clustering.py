@@ -27,12 +27,12 @@ class Clustering():
         B_dis_real, B_feats_real = discriminator_B(B)
         return A_feats_real, B_feats_real
 
-    def cluster(self, data_A, data_B, data_A_val, data_B_val):
+    def cluster(self, data_A, data_B):
 
             n_batches = math.ceil(len(data_A) / self.args.batch_size)
             print('%d batches per epoch' % n_batches)
             all_feats = np.empty(shape=(0,512*16))
-            all_names = []
+            #all_names = []
             a_dataloader, b_dataloader = get_data_loaders(data_A, data_B, self.args.batch_size,None,False)
             is_gray = True
             if not os.path.exists(os.path.join(self.model_path, 'dis_feats.npy')):
@@ -46,7 +46,7 @@ class Clustering():
                     temp = B_feats_real[2].cpu().data.numpy()
                     temp = temp.reshape((temp.shape[0],temp.shape[1]*temp.shape[2]*temp.shape[3]))
                     all_feats=np.concatenate((all_feats,temp))
-                    all_names += B_paths
+                    #all_names += B_paths
                     print(i)
                 np.save(os.path.join(self.model_path, 'dis_feats.npy'),all_feats)
 
@@ -56,9 +56,9 @@ class Clustering():
             #pca = PCA(n_components=512)
             #pca.fit(all_feats)
             #white_feats = whiten(pca.transform(all_feats))
-
+            all_names = [os.path.basename(x) for x in b_dataloader.dataset.files]
             white_feats = whiten(all_feats)
-            k = 10
+            k = self.args.k_clusters
             if not os.path.exists(os.path.join(self.model_path, 'kmenas.pkl')):
                 codebook, labels = kmeans2(white_feats, k)
                 with open(os.path.join(self.model_path, 'kmenas.pkl'), 'wb') as f:

@@ -1,5 +1,6 @@
 import os
 import cv2
+import pickle
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.sampler import WeightedRandomSampler
@@ -49,15 +50,15 @@ def get_city_scapes(test=False, number_of_samples=None):
     return _get_data(city_path, test, number_of_samples, test_dir='test')
 
 
-def get_edges2shoes(test=False, number_of_samples=None):
-    return _get_data(shoe_path, test, number_of_samples)
+def get_edges2shoes(test=False, number_of_samples=None, cluster_file=None, cluster_idx=0, is_cluster_A=False):
+    return _get_data(shoe_path, test, number_of_samples, cluster_file=cluster_file, cluster_idx=cluster_idx, is_cluster_A=is_cluster_A)
 
 
 def get_edges2handbags(test=False, number_of_samples=None, ):
     return _get_data(handbag_path, test, number_of_samples)
 
 
-def _get_data(item_path, test=False, number_of_samples=None, test_dir='val'):
+def _get_data(item_path, test=False, number_of_samples=None, test_dir='val', cluster_file=None, cluster_idx=0, is_cluster_A=False):
     item_path = os.path.join(item_path, test_dir if test else 'train')
 
     image_paths = [os.path.join(item_path, x) for x in os.listdir(item_path)]
@@ -66,11 +67,22 @@ def _get_data(item_path, test=False, number_of_samples=None, test_dir='val'):
         image_paths = image_paths[:number_of_samples]
 
     if test:
+        if cluster_file:
+            image_paths = filter_by_cluster(image_paths, cluster_file, cluster_idx)
         return [image_paths, image_paths]
     else:
         n_images = len(image_paths)
         mid = round(n_images / 2)
-        return [image_paths[:mid], image_paths[mid:]]
+        data_a = image_paths[:mid]
+        data_b = image_paths[mid:]
+        if cluster_file:
+            if is_cluster_A:
+                data_a = filter_by_cluster(data_a, cluster_file, cluster_idx)
+            else:
+                data_b = filter_by_cluster(data_b, cluster_file, cluster_idx)
+        return [data_a, data_b]
+
+
 
 
 class DomainAdaptationDataset(Dataset):
@@ -97,3 +109,18 @@ def get_data_loaders(data_a, data_b, batch_size, b_weights=None, is_shuffle = Tr
     sampler = None if b_weights is None else WeightedRandomSampler(b_weights, len(b_weights))
     b_dataloader = DataLoader(b_dataset, batch_size=batch_size, sampler=sampler, shuffle=(sampler == None and is_shuffle))
     return a_dataloader, b_dataloader
+
+def filter_by_cluster(dataset, cluster_file, cluster_idx):
+    with open(cluster_file, 'rb') as f:
+        codebook, labels, all_names = pickle.load(f)
+    cur_dir=os.path.dirname(dataset[0])
+    cluster_dataset=[]
+    labels = np.asarray(labels)
+    rel_idx = np.where(labels == cluster_idx)[0]
+    rel_names = [os.path.join(cur_dir,all_names[x]) for x in rel_idx]
+    for file in rel_names:
+        if file in dataset:
+            cluster_dataset.append(file)
+
+    return cluster_dataset
+
