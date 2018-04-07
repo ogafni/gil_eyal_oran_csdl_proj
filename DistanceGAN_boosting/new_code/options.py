@@ -15,7 +15,7 @@ class Options():
                  one_sample_index=0, continue_training=False, indiv_gan_rate=1, fixed_g1=False,
                  pretrained_g1=None, pretrained_g2=None, one_sample_train=True,
                  is_auto_detect_training_version=True, direction_btoa=True, version_save=3, k_clusters=5,
-                 cluster_file=None, cluster_idx=-1, is_cluster_A=False):
+                 cluster_file_A=None, cluster_idx_A=-1, cluster_file_B=None, cluster_idx_B=-1):
         self.cuda = cuda
         self.task_name = task_name
         self.dataset = dataset
@@ -63,9 +63,10 @@ class Options():
         self.direction_btoa = direction_btoa
         self.version_save = version_save
         self.k_clusters = k_clusters
-        self.cluster_file=cluster_file
-        self.cluster_idx=cluster_idx
-        self.is_cluster_A=is_cluster_A
+        self.cluster_file_A=cluster_file_A
+        self.cluster_idx_A=cluster_idx_A
+        self.cluster_file_B = cluster_file_B
+        self.cluster_idx_B = cluster_idx_B
 
     @classmethod
     def from_cmd(cls):

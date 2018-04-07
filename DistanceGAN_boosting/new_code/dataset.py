@@ -50,15 +50,15 @@ def get_city_scapes(test=False, number_of_samples=None):
     return _get_data(city_path, test, number_of_samples, test_dir='test')
 
 
-def get_edges2shoes(test=False, number_of_samples=None, cluster_file=None, cluster_idx=0, is_cluster_A=False):
-    return _get_data(shoe_path, test, number_of_samples, cluster_file=cluster_file, cluster_idx=cluster_idx, is_cluster_A=is_cluster_A)
+def get_edges2shoes(test=False, number_of_samples=None, cluster_file_A=None, cluster_idx_A=0, cluster_file_B=None, cluster_idx_B=0):
+    return _get_data(shoe_path, test, number_of_samples, cluster_file_A=cluster_file_A, cluster_idx_A=cluster_idx_A, cluster_file_B=cluster_file_B,cluster_idx_B=cluster_idx_B)
 
 
 def get_edges2handbags(test=False, number_of_samples=None, ):
     return _get_data(handbag_path, test, number_of_samples)
 
 
-def _get_data(item_path, test=False, number_of_samples=None, test_dir='val', cluster_file=None, cluster_idx=0, is_cluster_A=False):
+def _get_data(item_path, test=False, number_of_samples=None, test_dir='val', cluster_file_A=None, cluster_idx_A=0, cluster_file_B=None, cluster_idx_B=0):
     item_path = os.path.join(item_path, test_dir if test else 'train')
 
     image_paths = [os.path.join(item_path, x) for x in os.listdir(item_path)]
@@ -67,19 +67,18 @@ def _get_data(item_path, test=False, number_of_samples=None, test_dir='val', clu
         image_paths = image_paths[:number_of_samples]
 
     if test:
-        if cluster_file:
-            image_paths = filter_by_cluster(image_paths, cluster_file, cluster_idx)
+        if cluster_file_B:
+            image_paths = filter_by_cluster(image_paths, cluster_file_B, cluster_idx_B)
         return [image_paths, image_paths]
     else:
         n_images = len(image_paths)
         mid = round(n_images / 2)
         data_a = image_paths[:mid]
         data_b = image_paths[mid:]
-        if cluster_file:
-            if is_cluster_A:
-                data_a = filter_by_cluster(data_a, cluster_file, cluster_idx)
-            else:
-                data_b = filter_by_cluster(data_b, cluster_file, cluster_idx)
+        if cluster_file_A:
+            data_a = filter_by_cluster(data_a, cluster_file_A, cluster_idx_A)
+        if cluster_file_B:
+            data_b = filter_by_cluster(data_b, cluster_file_B, cluster_idx_B)
         return [data_a, data_b]
 
 

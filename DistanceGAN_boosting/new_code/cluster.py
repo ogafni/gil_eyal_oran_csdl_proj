@@ -12,4 +12,4 @@ if __name__ == "__main__":
     model = Clustering(options)
     data_a, data_b = dataset.get_edges2shoes(number_of_samples=options.number_of_samples if options.not_all_samples else None)
     data_a_val, data_b_val = dataset.get_edges2shoes(test=True)
-    model.cluster(data_a+data_a_val, data_b+data_b_val)
+    model.cluster(data_a+data_a_val, data_b+data_b_val,is_cluster_A=False)
