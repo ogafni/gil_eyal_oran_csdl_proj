@@ -78,6 +78,9 @@ def _get_data(item_path, test=False, number_of_samples=None, test_dir='val', clu
 
     image_paths = [os.path.join(item_path, x) for x in os.listdir(item_path)]
 
+    if len(image_paths) % 2 == 1:
+        del image_paths[-1]
+
     if number_of_samples is not None:
         image_paths = image_paths[:number_of_samples]
 
