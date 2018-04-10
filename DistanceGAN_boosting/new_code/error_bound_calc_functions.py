@@ -96,9 +96,7 @@ def samples_order_by_loss_from_filenames(dataset_A, dataset_B, G1, G2, is_cuda=T
 
     test_A = Variable(torch.FloatTensor(test_A))
     test_B = Variable(torch.FloatTensor(test_B))
-    if is_cuda:
-        test_A = test_A.cuda(0)
-        test_B = test_B.cuda(0)
+
     if direcion_btoa:
         return samples_order_by_loss(test_B, test_A, G1, G2, n_batch)
     else:
