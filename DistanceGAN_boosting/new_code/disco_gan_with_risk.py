@@ -36,14 +36,16 @@ class DiscoGANRisk(DiscoGAN):
 
     def _save_model(self):
         version = str(int(self.iters / self.args.model_save_interval))
-        super()._save_model()
+        if not self.args.fixed_g1:
+            super()._save_model()
         self.models_repository.save_model(self.generator_A_G2, self.generator_B_G2, self.discriminator_A_G2,
                                           self.discriminator_B_G2, version, False)
         if version == str(self.args.version_save):
             self.is_keep_training = False
 
     def _log_losses(self, A, B):
-        super()._log_losses(A, B)
+        if not self.args.fixed_g1:
+            super()._log_losses(A, B)
         A, B = read_images(A, B, self.args.image_size, self.cuda, self.args.dataset, aligned=True)
         loss = nn.L1Loss()
         gt_error_A_G2 = calc_mean_gt_error(B, A, self.generator_A_G2, loss)
