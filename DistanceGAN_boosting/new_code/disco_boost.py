@@ -141,8 +141,10 @@ class DiscoBoost:
             print('Round {0}: {1} samples'.format(round, sum(weights > 0)))
             gan = self._get_round_disco_gan(round)
             gan.train(data_A, data_B, data_A_val, data_B_val, weights)
+            print('Training G2')
             gan_with_risk = self._get_round_disco_gan_with_risk(round)
             gan_with_risk.train(data_A, data_B, data_A_val, data_B_val, weights)
+            print('Calculating bounds')
             if self.options.direction_btoa:
                 G1, G2 = gan_with_risk.generator_A, gan_with_risk.generator_A_G2
                 _, bounds, _ = samples_order_by_loss_from_filenames(data_A, data_B, G1, G2, self.options.cuda,
