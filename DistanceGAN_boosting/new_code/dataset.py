@@ -12,7 +12,7 @@ maps_path = os.path.join(dataset_path, 'maps')
 city_path = os.path.join(dataset_path, 'cityscapes')
 
 
-def read_images(filenames, domain=None, image_size=64, split=256, is_gray = False):
+def read_images(filenames, domain=None, image_size=64, split=256, is_gray=False):
     images = []
 
     for fn in filenames:
@@ -32,7 +32,6 @@ def read_images(filenames, domain=None, image_size=64, split=256, is_gray = Fals
                 image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
                 image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
 
-
         image = cv2.resize(image, (image_size, image_size))
         image = image.astype(np.float32) / 255.
         image = image.transpose(2, 0, 1)
@@ -40,6 +39,19 @@ def read_images(filenames, domain=None, image_size=64, split=256, is_gray = Fals
 
     images = np.stack(images)
     return images
+
+
+def get_data(dataset_name, test=False, number_of_samples=None):
+    if dataset_name == 'maps':
+        return get_maps(test, number_of_samples)
+    elif dataset_name == 'city_scpaes':
+        return get_city_scapes(test, number_of_samples)
+    elif dataset_name == 'edges2shoes':
+        return get_edges2shoes(test, number_of_samples)
+    elif dataset_name == 'edges2handbags':
+        return get_edges2handbags(test, number_of_samples)
+    else:
+        raise ValueError("Invalid dataset name {0}".format(dataset_name))
 
 
 def get_maps(test=False, number_of_samples=None):
@@ -50,15 +62,18 @@ def get_city_scapes(test=False, number_of_samples=None):
     return _get_data(city_path, test, number_of_samples, test_dir='test')
 
 
-def get_edges2shoes(test=False, number_of_samples=None, cluster_file_A=None, cluster_idx_A=0, cluster_file_B=None, cluster_idx_B=0):
-    return _get_data(shoe_path, test, number_of_samples, cluster_file_A=cluster_file_A, cluster_idx_A=cluster_idx_A, cluster_file_B=cluster_file_B,cluster_idx_B=cluster_idx_B)
+def get_edges2shoes(test=False, number_of_samples=None, cluster_file_A=None, cluster_idx_A=0, cluster_file_B=None,
+                    cluster_idx_B=0):
+    return _get_data(shoe_path, test, number_of_samples, cluster_file_A=cluster_file_A, cluster_idx_A=cluster_idx_A,
+                     cluster_file_B=cluster_file_B, cluster_idx_B=cluster_idx_B)
 
 
-def get_edges2handbags(test=False, number_of_samples=None, ):
+def get_edges2handbags(test=False, number_of_samples=None):
     return _get_data(handbag_path, test, number_of_samples)
 
 
-def _get_data(item_path, test=False, number_of_samples=None, test_dir='val', cluster_file_A=None, cluster_idx_A=0, cluster_file_B=None, cluster_idx_B=0):
+def _get_data(item_path, test=False, number_of_samples=None, test_dir='val', cluster_file_A=None, cluster_idx_A=0,
+              cluster_file_B=None, cluster_idx_B=0):
     item_path = os.path.join(item_path, test_dir if test else 'train')
 
     image_paths = [os.path.join(item_path, x) for x in os.listdir(item_path)]
@@ -82,8 +97,6 @@ def _get_data(item_path, test=False, number_of_samples=None, test_dir='val', clu
         return [data_a, data_b]
 
 
-
-
 class DomainAdaptationDataset(Dataset):
     def __init__(self, files, transform=None):
         self.files = files
@@ -100,26 +113,27 @@ class DomainAdaptationDataset(Dataset):
         return sample
 
 
-def get_data_loaders(data_a, data_b, batch_size, b_weights=None, is_shuffle = True):
+def get_data_loaders(data_a, data_b, batch_size, b_weights=None, is_shuffle=True):
     a_dataset = DomainAdaptationDataset(data_a)
     b_dataset = DomainAdaptationDataset(data_b)
     a_dataloader = DataLoader(a_dataset, batch_size=batch_size, shuffle=is_shuffle)
     # Weights should only apply to B
     sampler = None if b_weights is None else WeightedRandomSampler(b_weights, len(b_weights))
-    b_dataloader = DataLoader(b_dataset, batch_size=batch_size, sampler=sampler, shuffle=(sampler == None and is_shuffle))
+    b_dataloader = DataLoader(b_dataset, batch_size=batch_size, sampler=sampler,
+                              shuffle=(sampler == None and is_shuffle))
     return a_dataloader, b_dataloader
+
 
 def filter_by_cluster(dataset, cluster_file, cluster_idx):
     with open(cluster_file, 'rb') as f:
         codebook, labels, all_names = pickle.load(f)
-    cur_dir=os.path.dirname(dataset[0])
-    cluster_dataset=[]
+    cur_dir = os.path.dirname(dataset[0])
+    cluster_dataset = []
     labels = np.asarray(labels)
     rel_idx = np.where(labels == cluster_idx)[0]
-    rel_names = [os.path.join(cur_dir,all_names[x]) for x in rel_idx]
+    rel_names = [os.path.join(cur_dir, all_names[x]) for x in rel_idx]
     for file in rel_names:
         if file in dataset:
             cluster_dataset.append(file)
 
     return cluster_dataset
-
