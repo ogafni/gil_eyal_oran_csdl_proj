@@ -73,7 +73,7 @@ class DiscoGAN():
         version = str(int(self.iters / self.args.model_save_interval))
         self.models_repository.save_model(self.generator_A, self.generator_B, self.discriminator_A,
                                           self.discriminator_B, version)
-        if version == 'self.args.version_save':
+        if version == str(self.args.version_save):
             self.is_keep_training = False
 
     def _save_images(self, A, B):
