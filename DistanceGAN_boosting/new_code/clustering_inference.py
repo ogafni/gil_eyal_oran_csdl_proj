@@ -3,6 +3,7 @@ from new_code import dataset
 from new_code.disco_gan_model import DiscoGAN
 from new_code.options import Options
 from new_code.error_bound_calc_functions import *
+from matplotlib import pyplot as plt
 import sys
 
 
@@ -90,18 +91,33 @@ def calc_gt_loss_of_cluster(cluster_idx_A, cluster_idx_B, cluster_file_A, cluste
     G1_0_A, G1_0_B = load_models(options)
 
     groud_truth_loss = samples_gt_error_from_filenames(data_a_val, data_b_val, G1_0_A, options.cuda, options.batch_size)
-    return groud_truth_loss
+    return groud_truth_loss, data_b_val
 
+
+def filter_dups(sorted_clustering, sorted_clustering_names):
+    # rem_idx = [idx for idx, x in enumerate(sorted_clustering_names) if idx > 0 and sorted_clustering_names[idx] == sorted_clustering_names[idx - 1]]
+    #
+    # for idx in sorted(rem_idx, reverse=True):
+    #     del sorted_clustering[idx]
+    #     del sorted_clustering_names[idx]
+    #
+    # return sorted_clustering, sorted_clustering_names
+    all_names = []
+    all_gt = []
+    for idx, name in enumerate(sorted_clustering_names):
+        if name not in all_names:
+            all_names += [name]
+            all_gt += [sorted_clustering[idx]]
+
+    return all_gt, all_names
 
 if __name__ == "__main__":
-
-    pretrained_g1_path = '/home/gil/MEGA/saved_models/referece/edges2shoes/G1'
-    print(np.average(calc_gt_loss_of_cluster(-1, -1, '', '', pretrained_g1_path)))
 
     cluster_file_A = '/home/gil/MEGA/saved_models/referece/edges2shoes/kmenas_A.pkl'
     cluster_file_B = '/home/gil/MEGA/saved_models/referece/edges2shoes/kmenas_B.pkl'
 
-    groud_truth_loss=[]
+    clustering_ground_truth_loss=[]
+    clustering_names = []
 
     cluster_idx_A = [0,1,2,3,4,5]
     cluster_idx_B = [2,5,4,1,3,0]
@@ -111,7 +127,22 @@ if __name__ == "__main__":
         pretrained_g1_path='/home/gil/MEGA/saved_models/cluster_A'+str(cluster_idx_A[idx])+'_B'+str(cluster_idx_B[idx])+\
                            '/edges2shoes/G1'
 
-        groud_truth_loss += calc_gt_loss_of_cluster(cluster_idx_A[idx], cluster_idx_B[idx], cluster_file_A, cluster_file_B, pretrained_g1_path).tolist()
+        groud_truth_loss, data_b_val = calc_gt_loss_of_cluster(cluster_idx_A[idx], cluster_idx_B[idx], cluster_file_A, cluster_file_B, pretrained_g1_path)
+        clustering_ground_truth_loss += groud_truth_loss.tolist()
+        clustering_names += data_b_val
 
     print(np.average(np.asarray(groud_truth_loss)))
 
+    pretrained_g1_path = '/home/gil/MEGA/saved_models/referece/edges2shoes/G1'
+    groud_truth_loss, test_names = calc_gt_loss_of_cluster(-1, -1, '', '', pretrained_g1_path)
+    print(np.average(groud_truth_loss))
+
+    sorted_clustering = [y for x,y in sorted(zip(clustering_names, clustering_ground_truth_loss))]
+    sorted_org = [y for x, y in sorted(zip(test_names, groud_truth_loss))]
+
+    sorted_clustering_names = [x for x, y in sorted(zip(clustering_names, clustering_ground_truth_loss))]
+    sorted_names = [x for x, y in sorted(zip(test_names, groud_truth_loss))]
+
+    sorted_clustering, sorted_clustering_names = filter_dups(sorted_clustering, sorted_clustering_names)
+
+    corr = pearsonr(sorted_clustering, sorted_org)[0]
