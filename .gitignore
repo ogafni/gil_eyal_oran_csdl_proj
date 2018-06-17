@@ -8,3 +8,6 @@ DistanceGAN_boosting/results/
 *-checkpoint.ipynb
 DistanceGAN_boosting/new_code/models/
 DistanceGAN_boosting/new_code/results/boost_debug/edges2shoes/1/log/events.out.tfevents.1523352920.Eyal
+DistanceGAN_boosting/new_code/results/
+DistanceGAN_boosting/new_code/analysis/
+*.csv
