@@ -5,8 +5,8 @@ from scipy.stats import pearsonr
 from torch.autograd import Variable
 from progressbar import ProgressBar, Percentage, Bar, ETA
 
-from .utils import to_no_grad_var
-from .dataset import *
+from utils import to_no_grad_var
+from dataset import *
 
 
 def _calc_loss(y, y_pred, loss):
@@ -58,7 +58,7 @@ def samples_order_by_loss(samples, labels, G1, G2, n_batch=64):
     """
     n_samples = len(samples)  # number of samples in the dataset
     print('Calculating bounds of {0} samples'.format(n_samples))
-    bounds = np.zeros(n_samples, dtype=float)  # initalize loss vec
+    bounds = np.zeros(n_samples, dtype=float)  # initialize loss vec
     ground_truth_loss = np.zeros(n_samples, dtype=float)  # initalize ground truth loss vec
     n_iter = math.ceil(n_samples / n_batch)
     widgets = [Percentage(), Bar(), ETA()]

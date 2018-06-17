@@ -158,6 +158,8 @@ class DiscoGAN():
 
         n_batches = math.ceil(len(data_A) / self.args.batch_size)
         print('%d batches per epoch' % n_batches)
+        min_epochs = math.ceil(self.args.model_save_interval / n_batches) * 3
+        self.args.epoch_size = max(self.args.epoch_size, min_epochs)
         if self.args.is_auto_detect_training_version:
             self.iters = self.last_exist_model_g1 * self.args.model_save_interval
         else:

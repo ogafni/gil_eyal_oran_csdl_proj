@@ -12,12 +12,12 @@ def run_experiment(options, weighter, boosting_rounds):
 
 
 if __name__ == "__main__":
-    options = Options(task_name='ada_boost',
-                      dataset='edges2shoes',
+    options = Options(task_name='halving',
+                      dataset='maps',
                       model_path='./models',
                       result_path='./results',
-                      batch_size=16)
-    # split_weighter = KeepBadWeighter(0.7)
-    # run_experiment(options, split_weighter, 3)
-    ada_weighter = ADAWeighter()
-    run_experiment(options, ada_weighter, 3)
+                      batch_size=8)
+    split_weighter = KeepBadWeighter(0.5)
+    run_experiment(options, split_weighter, 5)
+    #ada_weighter = ADAWeighter()
+    #run_experiment(options, ada_weighter, 3)
